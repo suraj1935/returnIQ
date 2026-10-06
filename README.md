@@ -20,9 +20,11 @@ sourced number, and data/ML teams who want a reference for leakage-safe evaluati
 | Oracle (true generating probability) | 0.427 | 0.691 | 0.1641 | - | - | - |
 
 **How to read this.** The labels are noisy by construction, so even a perfect model tops out near 0.69 ROC-AUC
-(`ml/ceiling.py` scores the generator's true probability on the same test orders). Logistic regression recovers
-roughly 70% of the achievable lift over chance, and gradient boosting does not beat it: the remaining gap is
-mostly irreducible noise, not model capacity, so more tuning would not change the picture. Probabilities are
+(`ml/ceiling.py` scores the generator's true probability on the same test orders). Against that ceiling, logistic regression recovers about
+71% of the achievable ROC-AUC lift, (0.636 - 0.5) / (0.691 - 0.5), and about 60% of the achievable PR-AUC lift,
+(0.351 - 0.236) / (0.427 - 0.236), with the current seed. PR-AUC is the primary metric, so 60% is the figure to
+quote. Gradient boosting does not beat logistic regression, so the remaining gap looks like mostly irreducible
+noise rather than model capacity. Probabilities are
 **not** re-weighted (class weighting was removed because it pushed Brier above the constant-guess baseline); the
 decision threshold is chosen on the validation window, never on test.
 
@@ -56,6 +58,8 @@ python -m pytest tests -q                           # unit + API + leakage + Pla
   parameters or rows, and that nothing is spelled out ("three products" vs 2 rows). Failures are withheld, empty
   results are reported as "cannot be computed" (never 0), and each answer cites `tool [query_id] as of <date>`
   plus a `Scope:` line with the filters actually queried. Any LLM failure falls back to the deterministic engine.
+  Remaining limit: numbers are checked by kind and value but not bound to a specific field, so a correct count
+  attached to the wrong label can still pass.
 - All tools filter on the same **order-date cohort** basis, so a "Q3" answer never mixes populations.
 
 ## LLM configuration (`.env`, see `.env.example`)

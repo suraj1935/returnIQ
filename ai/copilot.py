@@ -80,16 +80,71 @@ def _normalise(t: str) -> str:
     return _DIGIT_GROUP.sub("", t.translate(_FOLD))
 
 
+# Day/month mentions next to a month name ("March 1", "1 March", "March 1-31", "31st March"). They are
+# checked against real dates instead of the integer pool, so "31 orders" cannot ride on a 03-31 param.
+_MON = (r"(?:(?i:january|february|march|april|june|july|august|september|october|november|december"
+        r"|sept)|May|(?:Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?)")
+_ORD = r"(?:st|nd|rd|th)?"
+_MD = re.compile(r"(?<![\w.,-])(" + _MON + r")\s+(\d{1,2})" + _ORD + r"(?:\s*(?:-|to|through)\s*(\d{1,2})" + _ORD
+                 + r")?(?![\d,]\d|\.\d)")
+_DM = re.compile(r"(?<![\w.,-])(\d{1,2})" + _ORD + r"\s+(?:of\s+)?(" + _MON + r")(?!\w)")
+_OF = re.compile(r"(?<![\w.])(\d+(?:,\d{3})*)\s+(?:out\s+)?of\s+(\d+(?:,\d{3})*)(?![\d.]\d)", re.I)
+
+
+def _month_no(name: str) -> int:
+    n = name.lower().rstrip(".")[:3]
+    return next(i for i, m in enumerate(calendar.month_abbr) if m.lower() == n)
+
+
 @dataclass
 class _Facts:
     ints: set
     nums: list
     strings: set
     as_of: set
+    dates: set        # exact ISO dates appearing in tool rows/params
+    ranges: list      # (lo, hi) ISO bounds from each tool call's queried params
+
+
+def _date_ok(f: "_Facts", month: int, day: int) -> bool:
+    """True if month/day is an exact date in the tool data or falls inside a queried range."""
+    from datetime import date, timedelta
+    if any(int(d[5:7]) == month and int(d[8:10]) == day for d in f.dates):
+        return True
+    for lo, hi in f.ranges:
+        try:
+            d0, d1 = date.fromisoformat(lo), date.fromisoformat(hi)
+        except ValueError:
+            continue
+        for k in range(min((d1 - d0).days, 3660) + 1):
+            d = d0 + timedelta(days=k)
+            if d.month == month and d.day == day:
+                return True
+    return False
+
+
+def _check_dates(text_: str, f: "_Facts", bad: list[str]) -> str:
+    """Validate and strip 'Month D' / 'D Month' mentions; whatever is not a real date is reported."""
+    def one(mon, day, raw):
+        m, d = _month_no(mon), int(day)
+        if not (1 <= d <= 31 and _date_ok(f, m, d)):
+            bad.append(raw)
+
+    def md(m):
+        for d in (m.group(2), m.group(3)):
+            if d:
+                one(m.group(1), d, f"{m.group(1)} {d}")
+        return " "
+
+    def dm(m):
+        one(m.group(2), m.group(1), f"{m.group(1)} {m.group(2)}")
+        return " "
+
+    return _DM.sub(dm, _MD.sub(md, text_))
 
 
 def _facts(results: list[ToolResult]) -> _Facts:
-    f = _Facts(set(), [], set(), set())
+    f = _Facts(set(), [], set(), set(), set(), [])
 
     def walk(v):
         if isinstance(v, bool) or v is None:
@@ -103,8 +158,8 @@ def _facts(results: list[ToolResult]) -> _Facts:
                 f.ints.add(int(v))  # e.g. SUM() returned as 54909.0
         elif isinstance(v, str):
             f.strings.add(v.upper())
-            if _ISO.fullmatch(v):  # "March 1 - March 31" is derivable from a queried 2024-03-01..2024-03-31
-                f.ints.update(int(x) for x in v.split("-")[1:])
+            if _ISO.fullmatch(v):
+                f.dates.add(v)
         elif isinstance(v, dict):
             for x in v.values():
                 walk(x)
@@ -115,6 +170,9 @@ def _facts(results: list[ToolResult]) -> _Facts:
     for r in results:
         walk(r.rows)
         walk(r.params)
+        iso = sorted(v for v in r.params.values() if isinstance(v, str) and _ISO.fullmatch(v))
+        if iso:
+            f.ranges.append((iso[0], iso[-1]))
         f.ints.add(int(r.row_count))
         f.nums.append(float(r.row_count))
         if r.data_as_of:
@@ -131,6 +189,10 @@ def verify_grounding(answer: str, results: list[ToolResult]) -> tuple[bool, list
     text_ = re.sub(r"(?i)(\d)\s*percent\b", r"\1%", text_)
     text_ = _WORD_RE.sub(lambda m: _WORDS[m.group(1).lower()], text_)
 
+    for a, b in _OF.findall(text_):  # "X of Y": the part cannot exceed the whole
+        if int(a.replace(",", "")) > int(b.replace(",", "")):
+            bad += [a, b]
+
     blob = " ".join(f.strings)
     for i in _ID.findall(text_):
         if i.upper() not in f.strings and i.upper() not in blob:
@@ -142,6 +204,8 @@ def verify_grounding(answer: str, results: list[ToolResult]) -> tuple[bool, list
         if d not in iso_ok:
             bad.append(d)
     text_ = _ISO.sub(" ", text_)
+
+    text_ = _check_dates(text_, f, bad)
 
     years_ok = set(_YEAR.findall(blob))
     for y in _YEAR.findall(text_):
@@ -355,7 +419,9 @@ def _is_local(url: str) -> bool:
 
 def _ollama_answer(box, q):
     """Local Ollama or Ollama Cloud (OpenAI-compatible /v1). Tries OLLAMA_MODEL, then each model in
-    RETURNIQ_OLLAMA_FALLBACKS (comma separated); any failure falls through to the next, then to rules."""
+    RETURNIQ_OLLAMA_FALLBACKS (comma separated); any failure falls through to the next, then to rules.
+    A reply with no tool call and no digits is accepted as a refusal (ask() maps it to CANNOT_ANSWER);
+    a tool-less reply containing digits is an ungrounded answer and moves on to the next model."""
     api_key = os.environ.get("OLLAMA_API_KEY") or None
     models = [OLLAMA_MODEL] + [m.strip() for m in os.environ.get("RETURNIQ_OLLAMA_FALLBACKS", "").split(",") if m.strip()]
     last: Exception | None = None
@@ -365,6 +431,8 @@ def _ollama_answer(box, q):
         try:
             text, results = _openai_compat_answer(box, q, OLLAMA_URL, m, api_key, extra)
             if results:
+                return text, results
+            if text and not re.search(r"\d", text):  # no tools, no figures: a refusal, don't poll more models
                 return text, results
         except ToolError:
             raise
@@ -412,6 +480,8 @@ def ask(question: str, box: Toolbox | None = None, use_llm: bool | None = None) 
               "ollama": _ollama_answer, "rules": _rules_answer}[engine]
     try:
         text, results = runner(box, q)
+        if engine == "ollama" and text and not results and not re.search(r"\d", text):
+            return Answer(CANNOT_ANSWER, True, engine=engine)  # the LLM itself declined; never show its free text
         if llm and (not text or not results):  # model skipped the tools -> deterministic path decides
             engine, text, results = "rules(fallback)", *_rules_answer(box, q)
     except ToolError as ex:

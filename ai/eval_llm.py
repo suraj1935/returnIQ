@@ -33,7 +33,7 @@ def run(models: list[str]) -> None:
     os.environ["RETURNIQ_OLLAMA_FALLBACKS"] = ""
     for m in models:
         cp.OLLAMA_MODEL = m
-        ok_tool = ok_ground = 0
+        ok_tool = ok_ground = fell_back = 0
         times = []
         print(f"\n== {m}")
         for q, expect in CASES:
@@ -41,16 +41,18 @@ def run(models: list[str]) -> None:
             a = cp.ask(q, box)
             dt = time.time() - t
             used = {c["tool"] for c in a.citations}
-            tool_ok = used == expect if expect else not a.citations
             used_llm = a.engine == "ollama"
+            # Only the LLM's own answers are scored; a rules-engine fallback is counted separately.
+            tool_ok = used_llm and (used == expect if expect else not a.citations)
+            fell_back += not used_llm
             ok_tool += tool_ok
-            ok_ground += a.grounded
+            ok_ground += used_llm and a.grounded
             times.append(dt)
             print(f"  {dt:5.1f}s engine={a.engine:15} tools_ok={tool_ok!s:5} grounded={a.grounded!s:5} {q}")
             if not used_llm:
                 print("        (fell back to rules)")
         n = len(CASES)
-        print(f"  -> tool routing {ok_tool}/{n}, grounded {ok_ground}/{n}, median {sorted(times)[n // 2]:.1f}s")
+        print(f"  -> tool routing {ok_tool}/{n}, grounded {ok_ground}/{n}, fell back {fell_back}/{n}, median {sorted(times)[n // 2]:.1f}s")
 
 
 if __name__ == "__main__":

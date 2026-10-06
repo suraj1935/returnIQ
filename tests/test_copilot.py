@@ -108,3 +108,101 @@ def test_tools_treat_nullish_filters_as_no_filter(val):
 def test_refund_total_uses_order_date_basis():
     box = Toolbox()
     assert "order" in box.refund_total("2024-01-01", "2024-03-31").note.lower()
+
+
+# ---- date parts must not leak into the integer pool
+MARCH = ToolResult("return_rate", "q1", {"s": "2024-03-01", "e": "2024-03-31"},
+                   [{"mature_orders": 1200, "returned_orders": 280, "return_rate": 0.2333}], 1, False, "2024-12-31")
+
+
+@pytest.mark.parametrize("claim", [
+    "Only 3 returns were rejected",
+    "31 orders were returned in March 2024",
+    "On April 2 the rate was 23.33%",             # day outside the queried range
+    "From March 1 to March 32, 2024 the rate was 23.33%",
+])
+def test_grounding_rejects_date_part_leak(claim):
+    assert not verify_grounding(claim, [MARCH])[0]
+
+
+@pytest.mark.parametrize("claim", [
+    "From March 1 to March 31, 2024 the return rate was 23.33%",
+    "From 1 March to 31st March 2024 the return rate was 23.33%",
+    "March 1-31, 2024: 23.33%",
+    "280 of 1200 mature orders were returned in March 2024",
+])
+def test_grounding_accepts_real_dates(claim):
+    assert verify_grounding(claim, [MARCH])[0]
+
+
+def test_grounding_rejects_swapped_x_of_y():
+    ok, bad = verify_grounding("1200 of 280 orders were returned", [MARCH])
+    assert not ok and {"1200", "280"} <= set(bad)
+    assert not verify_grounding("1,200 out of 280 orders were returned", [MARCH])[0]
+    assert verify_grounding("280 of 1200 orders were returned", [MARCH])[0]
+
+
+# ---- Ollama refusals (no network: _openai_compat_answer is mocked)
+def _patch_ollama(monkeypatch, replies):
+    import ai.copilot as cp
+    calls = []
+
+    def fake(box, q, url, model, key, extra=None):
+        calls.append(model)
+        return replies[len(calls) - 1]
+
+    monkeypatch.setattr(cp, "_openai_compat_answer", fake)
+    monkeypatch.setenv("RETURNIQ_OLLAMA_FALLBACKS", "m2,m3")
+    monkeypatch.setattr(cp, "OLLAMA_MODEL", "m1")
+    monkeypatch.setenv("RETURNIQ_LLM", "ollama")
+    return calls
+
+
+def test_ollama_digitless_toolless_reply_is_a_refusal(monkeypatch):
+    from ai.copilot import CANNOT_ANSWER
+    calls = _patch_ollama(monkeypatch, [("I can only answer questions about returns.", [])])
+    a = ask("What is the weather in Paris?")
+    assert calls == ["m1"]
+    assert a.engine == "ollama" and a.answer == CANNOT_ANSWER and not a.citations
+
+
+def test_ollama_toolless_reply_with_digits_tries_next_model(monkeypatch):
+    calls = _patch_ollama(monkeypatch, [("It is 18 degrees.", [])] * 3)
+    a = ask("What is the weather in Paris?")
+    assert calls == ["m1", "m2", "m3"]
+    assert a.engine == "rules(fallback)"
+
+
+def test_ollama_exception_moves_to_next_model(monkeypatch):
+    import ai.copilot as cp
+    seen = []
+
+    def flaky(box, q, url, model, key, extra=None):
+        seen.append(model)
+        if model == "m1":
+            raise TimeoutError
+        return "I cannot help with that.", []
+
+    monkeypatch.setattr(cp, "_openai_compat_answer", flaky)
+    monkeypatch.setenv("RETURNIQ_OLLAMA_FALLBACKS", "m2,m3")
+    monkeypatch.setattr(cp, "OLLAMA_MODEL", "m1")
+    text, results = cp._ollama_answer(Toolbox(), "weather?")
+    assert seen == ["m1", "m2"] and text and not results
+
+
+def test_eval_llm_counts_fallbacks_separately(monkeypatch, capsys):
+    import ai.copilot as cp
+    import ai.eval_llm as ev
+    from ai.copilot import Answer
+
+    def fake_ask(q, box=None, use_llm=None):
+        if "weather" in q:                       # fallback refusal: must not count as a pass
+            return Answer(cp.CANNOT_ANSWER, True, [], "rules(fallback)")
+        if q.startswith("What was the return rate"):                         # LLM answered correctly
+            return Answer("x", True, [{"tool": "return_rate"}], "ollama")
+        return Answer("x", True, [{"tool": "return_rate"}], "rules(fallback)")
+
+    monkeypatch.setattr(cp, "ask", fake_ask)
+    ev.run(["m1"])
+    out = capsys.readouterr().out
+    assert "tool routing 1/7, grounded 1/7, fell back 6/7" in out
