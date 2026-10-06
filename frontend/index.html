@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReturnIQ Copilot</title>
+<style>
+  :root { --bg:#fff; --fg:#1a1a1a; --muted:#666; --card:#f4f5f7; --accent:#2457d6; --warn:#b45309; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14161a; --fg:#eceef2; --muted:#9aa0aa; --card:#1f2229; --accent:#7aa2ff; --warn:#f0b35a; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:24px 16px; }
+  h1 { font-size:1.4rem; margin:0 0 4px; } p.sub { color:var(--muted); margin:0 0 20px; }
+  form { display:flex; gap:8px; } input { flex:1; padding:10px; font:inherit; border:1px solid var(--muted); border-radius:8px; background:var(--bg); color:var(--fg); }
+  button { padding:10px 16px; font:inherit; border:0; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+  .msg { background:var(--card); border-radius:10px; padding:12px 14px; margin-top:14px; white-space:pre-wrap; }
+  .q { font-weight:600; } .cite { color:var(--muted); font-size:.85rem; margin-top:8px; } .warn { color:var(--warn); }
+  .chips { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; }
+  .chips button { background:var(--card); color:var(--fg); font-size:.85rem; padding:6px 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ReturnIQ Copilot</h1>
+  <p class="sub">Answers come only from SQL tool results. Data and model metrics are synthetic.</p>
+  <form id="f" aria-label="Ask the Copilot">
+    <input id="q" name="question" maxlength="500" placeholder="e.g. What is the return rate in 2024?" aria-label="Question" autocomplete="off">
+    <button id="ask" type="submit">Ask</button>
+  </form>
+  <div class="chips" id="chips"></div>
+  <div id="log" aria-live="polite"></div>
+</main>
+<script>
+const log = document.getElementById("log"), q = document.getElementById("q");
+const examples = ["What is the return rate in 2024?", "Top return reasons", "Which products have the highest return rate?", "How is the model doing?"];
+const chips = document.getElementById("chips");
+examples.forEach(t => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.onclick = () => { q.value = t; document.getElementById("f").requestSubmit(); }; chips.appendChild(b); });
+
+function add(cls, text) { const d = document.createElement("div"); d.className = "msg " + cls; d.textContent = text; log.prepend(d); return d; }
+document.getElementById("f").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const question = q.value.trim();
+  if (!question) { add("warn", "Please enter a question."); return; }
+  const box = document.createElement("div"); box.className = "msg";
+  const qd = document.createElement("div"); qd.className = "q"; qd.textContent = question;
+  const ad = document.createElement("div"); ad.className = "answer"; ad.textContent = "Thinking...";
+  box.append(qd, ad); log.prepend(box);
+  try {
+    const r = await fetch("/copilot/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question }) });
+    const body = await r.json();
+    if (!r.ok) { ad.textContent = "Error: " + (typeof body.detail === "string" ? body.detail : "invalid request"); ad.className = "answer warn"; return; }
+    ad.textContent = body.answer;
+    if (!body.grounded) ad.className = "answer warn";
+    if (body.citations.length) {
+      const c = document.createElement("div"); c.className = "cite";
+      c.textContent = "Sources: " + body.citations.map(x => `${x.tool} [${x.query_id}] as of ${x.data_as_of}`).join("; ");
+      box.append(c);
+    }
+  } catch (err) { ad.textContent = "Network error. Is the API running?"; ad.className = "answer warn"; }
+  q.value = "";
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+*.env
+CLAUDE.md
+ANTIGRAVITY.md
+AGENTS.md
+.claude/
+.antigravity/
+skills/
+scripts/

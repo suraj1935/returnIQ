@@ -1,0 +1,15 @@
+pandas
+numpy
+scikit-learn
+shap
+joblib
+sqlalchemy>=2.0
+psycopg2-binary
+pydantic>=2
+fastapi
+uvicorn
+httpx
+anthropic
+pytest
+playwright
+google-genai

@@ -1,0 +1,5 @@
+return_id,order_id,customer_id,product_id,return_date,reason,refund_amount,status
+RET-001,ORD-001,CUST-101,PROD-A,2024-01-15,defective,59.98,approved
+RET-002,ORD-003,CUST-103,PROD-C,2024-01-18,wrong_item,29.97,approved
+RET-003,ORD-005,CUST-105,PROD-D,2024-01-20,changed_mind,150.00,approved
+RET-004,ORD-007,CUST-107,PROD-E,2024-01-22,defective,79.96,approved
