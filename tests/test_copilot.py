@@ -1,8 +1,9 @@
 import pytest
+import ai.copilot as cp
 from sqlalchemy import text
 
 from ai.copilot import ask, parse_period, verify_grounding
-from ai.tools import ToolError, Toolbox, ToolResult
+from ai.tools import TOOL_SCHEMAS, ToolError, Toolbox, ToolResult
 from backend.db import get_readonly_engine
 
 
@@ -199,13 +200,13 @@ def test_eval_llm_counts_fallbacks_separately(monkeypatch, capsys):
         if "weather" in q:                       # fallback refusal: must not count as a pass
             return Answer(cp.CANNOT_ANSWER, True, [], "rules(fallback)")
         if q.startswith("What was the return rate"):                         # LLM answered correctly
-            return Answer("x", True, [{"tool": "return_rate"}], "ollama")
+            return Answer("x", True, [{"tool": "return_rate", "params": {"s": "2024-01-01", "e": "2024-12-31"}}], "ollama")
         return Answer("x", True, [{"tool": "return_rate"}], "rules(fallback)")
 
     monkeypatch.setattr(cp, "ask", fake_ask)
-    ev.run(["m1"])
+    ev.run(["m1", "--repeats", "1"])
     out = capsys.readouterr().out
-    assert "tool routing 1/7, grounded 1/7, fell back 6/7" in out
+    assert "tool routing 1/14, grounded 1/14, fell back 13/14" in out
 
 
 # ---- Fix 1: unified LLM decline/fallback (all engines, mock _openai_compat_answer) -----------
@@ -281,3 +282,39 @@ def test_grounding_rejects_wrong_day_in_written_date():
     """'December 30, 2024' does not match data_as_of '2024-12-31' → fails."""
     ok, bad = verify_grounding("as of December 30, 2024 the rate is 22.26%", [_FULL_RANGE])
     assert not ok, "Wrong day should fail"
+
+
+@pytest.mark.parametrize("q", ["What will next month's return rate be?", "Forecast returns for Q1 2025"])
+def test_forecast_questions_are_refused_without_tools(q):
+    text, results = cp._rules_answer(None, q)
+    assert results == [] and text == cp.FORECAST_REFUSAL
+
+
+def test_risk_and_history_questions_still_route():
+    class Box:
+        def high_risk_orders(self, n):
+            return ToolResult("high_risk_orders", "x", {}, [], 0, True, "")
+
+        def return_rate(self, s, e, p):
+            return ToolResult("return_rate", "x", {}, [], 0, True, "")
+    for q, tool in [("Which orders are likely to be returned?", "high_risk_orders"),
+                    ("What was the return rate in 2024?", "return_rate")]:
+        _, results = cp._rules_answer(Box(), q)
+        assert [r.tool for r in results] == [tool]
+
+
+def test_system_prompt_contains_data_window():
+    box = Toolbox()
+    with box.engine.connect() as c:
+        start = c.execute(text("SELECT MIN(order_date) FROM analytics_order_features")).scalar()
+        end = c.execute(text("SELECT snapshot_date FROM analytics_meta LIMIT 1")).scalar()
+    prompt = cp._system_prompt(box)
+    assert str(start) in prompt and str(end) in prompt
+    assert "not today's date" in prompt
+
+
+def test_top_products_min_orders_is_clamped():
+    r = Toolbox().top_products_by_return_rate(min_orders=1, limit=20)
+    assert r.params["m"] == 30
+    assert all(x["mature_orders"] >= 30 for x in r.rows)
+    assert "min_orders" not in str(next(t for t in TOOL_SCHEMAS if t["name"] == "top_products_by_return_rate"))

@@ -81,6 +81,9 @@ def _prod(v: str | None) -> str | None:
     return v
 
 
+MIN_ORDERS = 30  # floor on mature orders per product in rankings; not exposed to the LLM
+
+
 def _period(start_date, end_date, product_id=None) -> dict:
     return {"s": _d(start_date, "start_date") or "0000-01-01",
             "e": _d(end_date, "end_date") or "9999-12-31",
@@ -133,9 +136,9 @@ class Toolbox:
             GROUP BY reason ORDER BY returns DESC, reason""", p, limit=min(int(limit), 20))
 
     def top_products_by_return_rate(self, start_date: str | None = None, end_date: str | None = None,
-                                    min_orders: int = 50, limit: int = 5) -> ToolResult:
+                                    min_orders: int = MIN_ORDERS, limit: int = 5) -> ToolResult:
         p = _period(start_date, end_date)
-        p["m"] = max(1, int(min_orders))
+        p["m"] = max(MIN_ORDERS, int(min_orders))
         return self._run("top_products_by_return_rate", """
             SELECT product_id, COUNT(*) AS mature_orders, SUM(returned_30d) AS returned_orders,
                    ROUND(1.0 * SUM(returned_30d) / COUNT(*), 4) AS return_rate
@@ -188,8 +191,7 @@ TOOL_SCHEMAS = [
      "input_schema": {"type": "object", "properties": {**_DATES, "product_id": {"type": "string"},
                                                        "limit": {"type": "integer"}}}},
     {"name": "top_products_by_return_rate", "description": "Products ranked by return rate (min order volume applies).",
-     "input_schema": {"type": "object", "properties": {**_DATES, "min_orders": {"type": "integer"},
-                                                       "limit": {"type": "integer"}}}},
+     "input_schema": {"type": "object", "properties": {**_DATES, "limit": {"type": "integer"}}}},
     {"name": "refund_total", "description": "Total refunded amount and number of returns.",
      "input_schema": {"type": "object", "properties": {**_DATES, "product_id": {"type": "string"}}}},
     {"name": "high_risk_orders", "description": "Open orders with the highest predicted return risk.",

@@ -69,3 +69,14 @@ variables override `.env`. Compare models with `python ai/eval_llm.py <model> [<
 
 Postgres: set `DATABASE_URL` (+ `RETURNIQ_ENV=prod`) and `DATABASE_URL_READONLY` (role with SELECT on `analytics_*` only).
 Only SQLite has been exercised so far.
+
+## Copilot evaluation
+
+14 questions x 3 repeats = 42 cases per model (`python ai/eval_llm.py <model> --out models/llm_eval.json`).
+
+| Model | Tool routing | Grounded | Fell back to rules | Median latency (s) | Max latency (s) |
+|---|---|---|---|---|---|
+| gpt-oss:20b | 34/42 | 39/42 | 2/42 | 6.77 | 16.79 |
+
+gemma4:31b was chosen as the default because it was the only model with 42/42 routing and grounding across
+three repeats. This run predates the data-window fix (the system prompt now states the data's date range).

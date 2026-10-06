@@ -19,7 +19,9 @@ import os
 import re
 from dataclasses import dataclass, field
 
-from ai.tools import TOOL_SCHEMAS, ToolError, ToolResult, Toolbox, call_tool
+from sqlalchemy import text
+
+from ai.tools import MIN_ORDERS, TOOL_SCHEMAS, ToolError, ToolResult, Toolbox, call_tool
 
 MODEL = os.environ.get("RETURNIQ_LLM_MODEL", "claude-sonnet-5-5")
 GEMINI_MODEL = os.environ.get("RETURNIQ_GEMINI_MODEL", "gemini-2.5-flash")
@@ -32,6 +34,12 @@ MAX_TOOL_ROUNDS = 4
 CANNOT_ANSWER = ("I can't answer that from the available data. I can report return rates, top return reasons, "
                  "top products by return rate, refund totals, high-risk open orders, and model metrics.")
 
+FORECAST_REFUSAL = ("ReturnIQ reports historical return metrics and per-order risk scores. "
+                    "It does not forecast aggregate future return rates.")
+_RISK_RE = r"\b(risk|risky|likely to be returned|high[- ]risk)\b"
+_FORECAST_RE = (r"\b(will|forecast|predict\w*|projections?|next month|next quarter|next year|"
+                r"going to be|expected to be)\b")
+
 SYSTEM_PROMPT = """You are the ReturnIQ Returns Intelligence Copilot.
 Rules:
 - Every number you state MUST come verbatim (or as a percentage of a rate) from a tool result in this conversation.
@@ -41,6 +49,27 @@ Rules:
 - State the period you used. Do not speculate about causes; report only what the tools returned.
 - If a tool returns fewer rows than the user asked for, say so.
 - Be concise."""
+
+
+def _data_window(box: Toolbox) -> tuple[str, str] | None:
+    with box.engine.connect() as c:
+        start = c.execute(text("SELECT MIN(order_date) FROM analytics_order_features")).scalar()
+        end = c.execute(text("SELECT snapshot_date FROM analytics_meta LIMIT 1")).scalar()
+    return (str(start), str(end)) if start and end else None
+
+
+def _system_prompt(box: Toolbox) -> str:
+    """SYSTEM_PROMPT plus the data window, so relative dates resolve against the snapshot, not today."""
+    try:
+        win = _data_window(box)
+    except Exception:
+        win = None
+    if not win:
+        return SYSTEM_PROMPT
+    start, end = win
+    return (f"{SYSTEM_PROMPT}\nThe data covers {start} to {end}. Resolve relative dates such as 'last March' or "
+            f"'last month' against {end}, not today's date. If a requested period is outside this window, "
+            f"say the data does not cover it.")
 
 
 @dataclass
@@ -288,7 +317,11 @@ def _rules_answer(box: Toolbox, q: str) -> tuple[str, list[ToolResult]]:
     per = _fmt_period(s, e)
     scope = f" for {prod}" if prod else ""
 
-    if re.search(r"\b(risk|risky|likely to be returned|high[- ]risk)\b", ql) and "model" not in ql:
+    is_risk = re.search(_RISK_RE, ql) and "model" not in ql
+    if not is_risk and re.search(_FORECAST_RE, ql):
+        return FORECAST_REFUSAL, []
+
+    if is_risk:
         r = box.high_risk_orders(10)
         if r.empty:
             return "No open orders with risk scores are available.", [r]
@@ -317,7 +350,7 @@ def _rules_answer(box: Toolbox, q: str) -> tuple[str, list[ToolResult]]:
                 f"across {x['returns_counted']} non-rejected returns."), [r]
     if not prod and (re.search(r"\b(top|worst|highest|which)\b.*\bproduct", ql)
                      or re.search(r"\bproducts?\b.*\b(rate|return)", ql)):
-        r = box.top_products_by_return_rate(s, e, 50, 5)
+        r = box.top_products_by_return_rate(s, e, MIN_ORDERS, 5)
         if r.empty:
             return f"No products meet the minimum volume for {per}.", [r]
         lines = [f"{x['product_id']}: {x['return_rate'] * 100:.1f}% ({x['returned_orders']} of {x['mature_orders']} orders)"
@@ -345,7 +378,7 @@ def _llm_answer(box: Toolbox, q: str) -> tuple[str, list[ToolResult]]:
     msgs = [{"role": "user", "content": q}]
     results: list[ToolResult] = []
     for _ in range(MAX_TOOL_ROUNDS):
-        resp = client.messages.create(model=MODEL, max_tokens=800, system=SYSTEM_PROMPT,
+        resp = client.messages.create(model=MODEL, max_tokens=800, system=_system_prompt(box),
                                       tools=TOOL_SCHEMAS, messages=msgs)
         uses = [b for b in resp.content if b.type == "tool_use"]
         if not uses:
@@ -371,7 +404,7 @@ def _gemini_answer(box: Toolbox, q: str) -> tuple[str, list[ToolResult]]:
     decls = [types.FunctionDeclaration(name=t["name"], description=t["description"],
                                        parameters_json_schema=t["input_schema"]) for t in TOOL_SCHEMAS]
     cfg = types.GenerateContentConfig(
-        system_instruction=SYSTEM_PROMPT, tools=[types.Tool(function_declarations=decls)],
+        system_instruction=_system_prompt(box), tools=[types.Tool(function_declarations=decls)],
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True))
     contents = [types.Content(role="user", parts=[types.Part(text=q)])]
     results: list[ToolResult] = []
@@ -402,7 +435,7 @@ def _openai_compat_answer(box: Toolbox, q: str, base_url: str, model: str,
     tools = [{"type": "function", "function": {"name": t["name"], "description": t["description"],
                                                "parameters": t["input_schema"]}} for t in TOOL_SCHEMAS]
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
-    msgs = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": q}]
+    msgs = [{"role": "system", "content": _system_prompt(box)}, {"role": "user", "content": q}]
     results: list[ToolResult] = []
     for _ in range(MAX_TOOL_ROUNDS):
         r = httpx.post(f"{base_url}/chat/completions", headers=headers, timeout=LLM_TIMEOUT_S,
