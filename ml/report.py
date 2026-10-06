@@ -25,6 +25,7 @@ from ml.train import MODEL_DIR, TEST_START, VAL_START  # noqa: E402
 
 FIG_DIR = Path(__file__).resolve().parent.parent / "docs" / "figures"
 NOTE = "synthetic data"
+MIN_MONTH_ORDERS = 100  # months with fewer mature orders are too noisy to plot
 
 
 def _finish(fig, ax, title: str, xlabel: str, ylabel: str, name: str) -> Path:
@@ -42,13 +43,16 @@ def _finish(fig, ax, title: str, xlabel: str, ylabel: str, name: str) -> Path:
 
 def monthly_return_rate(mature: pd.DataFrame) -> Path:
     m = mature.assign(month=pd.to_datetime(mature.order_date).dt.to_period("M").dt.to_timestamp())
-    rate = m.groupby("month").returned_30d.mean()
+    g = m.groupby("month").returned_30d
+    rate = g.mean()[g.size() >= MIN_MONTH_ORDERS]
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.plot(rate.index, rate.values * 100, marker="o")
     for label, start in (("val starts", VAL_START), ("test starts", TEST_START)):
         ax.axvline(pd.Timestamp(start), color="gray", linestyle="--")
         ax.text(pd.Timestamp(start), ax.get_ylim()[1], f" {label}", va="top", fontsize=8)
     ax.text(rate.index[0], ax.get_ylim()[1], "train ", va="top", fontsize=8)
+    fig.text(0.01, 0.01, f"months with fewer than {MIN_MONTH_ORDERS} mature orders omitted", ha="left", va="bottom",
+             fontsize=8, color="gray")
     return _finish(fig, ax, "Monthly 30-day return rate (mature orders)", "Order month", "Return rate (%)",
                    "monthly_return_rate.png")
 
