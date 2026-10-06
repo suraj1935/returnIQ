@@ -12,7 +12,7 @@ import sys
 import time
 import argparse
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -68,6 +68,7 @@ def run(models: list[str]) -> None:
     os.environ["RETURNIQ_OLLAMA_FALLBACKS"] = ""
 
     table_rows = []
+    results = []  # one entry per model, in run order
 
     for m in (args.models or [cp.OLLAMA_MODEL]):
         cp.OLLAMA_MODEL = m
@@ -119,7 +120,7 @@ def run(models: list[str]) -> None:
         if out_path:
             result = {
                 "model": m,
-                "date": datetime.utcnow().isoformat() + "Z",
+                "date": datetime.now(timezone.utc).isoformat(),
                 "cases": total_cases,
                 "tool_routing_pass": f"{ok_tool}/{total_cases}",
                 "grounded_pass": f"{ok_ground}/{total_cases}",
@@ -128,8 +129,9 @@ def run(models: list[str]) -> None:
                 "max_latency": max_lat,
                 "per_case": per_case,
             }
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(result, f, indent=2)
+            results.append(result)
+            with open(out_path, "w", encoding="utf-8") as f:  # rewritten per model so a partial run keeps its results
+                json.dump(results, f, indent=2)
 
     print("\n| Model | Tool routing | Grounded | Fell back to rules | Median latency (s) | Max latency (s) |")
     print("|---|---|---|---|---|---|")

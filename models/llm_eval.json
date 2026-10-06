@@ -1,732 +1,2198 @@
-{
-  "model": "gpt-oss:20b",
-  "date": "2026-10-06T19:27:42.073677Z",
-  "cases": 42,
-  "tool_routing_pass": "34/42",
-  "grounded_pass": "39/42",
-  "fallback_count": "2/42",
-  "median_latency": 6.771175146102905,
-  "max_latency": 16.788158178329468,
-  "per_case": [
-    {
-      "question": "What was the return rate in 2024?",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-01-01",
-          "e": "2024-12-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 8.325194120407104
-    },
-    {
-      "question": "Return rate for PROD-0052 in Q3 2024?",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-07-01",
-          "e": "2024-09-30",
-          "p": "PROD-0052"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 5.94660496711731
-    },
-    {
-      "question": "Top 3 return reasons for PROD-0052",
-      "expected_tools": [
-        "top_return_reasons"
-      ],
-      "expected_params": {
-        "top_return_reasons": {
-          "p": "PROD-0052"
-        }
-      },
-      "tools_used": [
-        "top_return_reasons"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 9.894487380981445
-    },
-    {
-      "question": "Which 3 products have the highest return rate?",
-      "expected_tools": [
-        "top_products_by_return_rate"
-      ],
-      "expected_params": {
-        "top_products_by_return_rate": {
-          "m": 50
-        }
-      },
-      "tools_used": [
-        "top_products_by_return_rate"
-      ],
-      "params_match": false,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 9.854543685913086
-    },
-    {
-      "question": "Total refunds in March 2024",
-      "expected_tools": [
-        "refund_total"
-      ],
-      "expected_params": {
-        "refund_total": {
-          "s": "2024-03-01",
-          "e": "2024-03-31"
-        }
-      },
-      "tools_used": [
-        "refund_total"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 7.296100616455078
-    },
-    {
-      "question": "How good is the risk model?",
-      "expected_tools": [
-        "model_metrics"
-      ],
-      "expected_params": {},
-      "tools_used": [
-        "model_metrics"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 7.9767234325408936
-    },
-    {
-      "question": "What is the weather in Paris?",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 2.1311655044555664
-    },
-    {
-      "question": "return rate last March",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-03-01",
-          "e": "2024-03-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": false,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 6.175031423568726
-    },
-    {
-      "question": "Q3 2024 return rate",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-07-01",
-          "e": "2024-09-30"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 6.466225862503052
-    },
-    {
-      "question": "return rate from 2024-06-01 to 2024-08-31",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-06-01",
-          "e": "2024-08-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 6.234568357467651
-    },
-    {
-      "question": "return rate for PROD-9999",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "p": "PROD-9999"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "rules(fallback)",
-      "grounded": true,
-      "seconds": 4.2835259437561035
-    },
-    {
-      "question": "Write me a poem",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 2.9595754146575928
-    },
-    {
-      "question": "What will next month's return rate be?",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 2.6763765811920166
-    },
-    {
-      "question": "Return rate and top return reasons for PROD-0052 in 2024",
-      "expected_tools": [
-        "return_rate",
-        "top_return_reasons"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-01-01",
-          "e": "2024-12-31",
-          "p": "PROD-0052"
+[
+  {
+    "model": "gemma4:31b",
+    "date": "2026-10-06T20:03:16.529872+00:00",
+    "cases": 42,
+    "tool_routing_pass": "42/42",
+    "grounded_pass": "42/42",
+    "fallback_count": "0/42",
+    "median_latency": 3.779123306274414,
+    "max_latency": 13.840627908706665,
+    "per_case": [
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
         },
-        "top_return_reasons": {
-          "s": "2024-01-01",
-          "e": "2024-12-31",
-          "p": "PROD-0052"
-        }
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 13.840627908706665
       },
-      "tools_used": [
-        "return_rate",
-        "top_return_reasons"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 11.988727807998657
-    },
-    {
-      "question": "What was the return rate in 2024?",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-01-01",
-          "e": "2024-12-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 5.4996497631073
-    },
-    {
-      "question": "Return rate for PROD-0052 in Q3 2024?",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-07-01",
-          "e": "2024-09-30",
-          "p": "PROD-0052"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 7.572873115539551
-    },
-    {
-      "question": "Top 3 return reasons for PROD-0052",
-      "expected_tools": [
-        "top_return_reasons"
-      ],
-      "expected_params": {
-        "top_return_reasons": {
-          "p": "PROD-0052"
-        }
-      },
-      "tools_used": [
-        "top_return_reasons"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 10.971532583236694
-    },
-    {
-      "question": "Which 3 products have the highest return rate?",
-      "expected_tools": [
-        "top_products_by_return_rate"
-      ],
-      "expected_params": {
-        "top_products_by_return_rate": {
-          "m": 50
-        }
-      },
-      "tools_used": [
-        "top_products_by_return_rate"
-      ],
-      "params_match": false,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 10.84911584854126
-    },
-    {
-      "question": "Total refunds in March 2024",
-      "expected_tools": [
-        "refund_total"
-      ],
-      "expected_params": {
-        "refund_total": {
-          "s": "2024-03-01",
-          "e": "2024-03-31"
-        }
-      },
-      "tools_used": [
-        "refund_total"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 5.991206407546997
-    },
-    {
-      "question": "How good is the risk model?",
-      "expected_tools": [
-        "model_metrics"
-      ],
-      "expected_params": {},
-      "tools_used": [
-        "model_metrics"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 7.026330232620239
-    },
-    {
-      "question": "What is the weather in Paris?",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 2.680980920791626
-    },
-    {
-      "question": "return rate last March",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-03-01",
-          "e": "2024-03-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": false,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 8.61061716079712
-    },
-    {
-      "question": "Q3 2024 return rate",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-07-01",
-          "e": "2024-09-30"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 5.276021957397461
-    },
-    {
-      "question": "return rate from 2024-06-01 to 2024-08-31",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-06-01",
-          "e": "2024-08-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 5.961481094360352
-    },
-    {
-      "question": "return rate for PROD-9999",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "p": "PROD-9999"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 6.731620788574219
-    },
-    {
-      "question": "Write me a poem",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 4.417961359024048
-    },
-    {
-      "question": "What will next month's return rate be?",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 3.0553150177001953
-    },
-    {
-      "question": "Return rate and top return reasons for PROD-0052 in 2024",
-      "expected_tools": [
-        "return_rate",
-        "top_return_reasons"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-01-01",
-          "e": "2024-12-31",
-          "p": "PROD-0052"
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
         },
-        "top_return_reasons": {
-          "s": "2024-01-01",
-          "e": "2024-12-31",
-          "p": "PROD-0052"
-        }
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.210375070571899
       },
-      "tools_used": [
-        "return_rate",
-        "top_return_reasons"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 11.184241771697998
-    },
-    {
-      "question": "What was the return rate in 2024?",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-01-01",
-          "e": "2024-12-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 8.883628606796265
-    },
-    {
-      "question": "Return rate for PROD-0052 in Q3 2024?",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-07-01",
-          "e": "2024-09-30",
-          "p": "PROD-0052"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 9.433088064193726
-    },
-    {
-      "question": "Top 3 return reasons for PROD-0052",
-      "expected_tools": [
-        "top_return_reasons"
-      ],
-      "expected_params": {
-        "top_return_reasons": {
-          "p": "PROD-0052"
-        }
-      },
-      "tools_used": [
-        "top_return_reasons"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 8.904592514038086
-    },
-    {
-      "question": "Which 3 products have the highest return rate?",
-      "expected_tools": [
-        "top_products_by_return_rate"
-      ],
-      "expected_params": {
-        "top_products_by_return_rate": {
-          "m": 50
-        }
-      },
-      "tools_used": [
-        "top_products_by_return_rate"
-      ],
-      "params_match": true,
-      "engine": "rules(fallback)",
-      "grounded": true,
-      "seconds": 7.827932119369507
-    },
-    {
-      "question": "Total refunds in March 2024",
-      "expected_tools": [
-        "refund_total"
-      ],
-      "expected_params": {
-        "refund_total": {
-          "s": "2024-03-01",
-          "e": "2024-03-31"
-        }
-      },
-      "tools_used": [
-        "refund_total"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 6.220721483230591
-    },
-    {
-      "question": "How good is the risk model?",
-      "expected_tools": [
-        "model_metrics"
-      ],
-      "expected_params": {},
-      "tools_used": [
-        "model_metrics"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 6.771175146102905
-    },
-    {
-      "question": "What is the weather in Paris?",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 3.0704421997070312
-    },
-    {
-      "question": "return rate last March",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-03-01",
-          "e": "2024-03-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": false,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 7.836273431777954
-    },
-    {
-      "question": "Q3 2024 return rate",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-07-01",
-          "e": "2024-09-30"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 7.393939018249512
-    },
-    {
-      "question": "return rate from 2024-06-01 to 2024-08-31",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-06-01",
-          "e": "2024-08-31"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 6.642750263214111
-    },
-    {
-      "question": "return rate for PROD-9999",
-      "expected_tools": [
-        "return_rate"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "p": "PROD-9999"
-        }
-      },
-      "tools_used": [
-        "return_rate"
-      ],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 8.424571514129639
-    },
-    {
-      "question": "Write me a poem",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 4.4930970668792725
-    },
-    {
-      "question": "What will next month's return rate be?",
-      "expected_tools": [],
-      "expected_params": {},
-      "tools_used": [],
-      "params_match": true,
-      "engine": "ollama",
-      "grounded": true,
-      "seconds": 4.189306735992432
-    },
-    {
-      "question": "Return rate and top return reasons for PROD-0052 in 2024",
-      "expected_tools": [
-        "return_rate",
-        "top_return_reasons"
-      ],
-      "expected_params": {
-        "return_rate": {
-          "s": "2024-01-01",
-          "e": "2024-12-31",
-          "p": "PROD-0052"
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
         },
-        "top_return_reasons": {
-          "s": "2024-01-01",
-          "e": "2024-12-31",
-          "p": "PROD-0052"
-        }
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.147114992141724
       },
-      "tools_used": [
-        "return_rate",
-        "top_return_reasons"
-      ],
-      "params_match": false,
-      "engine": "ollama",
-      "grounded": false,
-      "seconds": 16.788158178329468
-    }
-  ]
-}
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.783284664154053
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.848274230957031
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 8.282209396362305
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.067343235015869
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.122991561889648
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.50439715385437
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.721128225326538
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.958711862564087
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.181664228439331
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.198894739151001
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.118678092956543
+      },
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.3761420249938965
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.322410821914673
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.6417555809020996
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.3646609783172607
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.204739093780518
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.603519678115845
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.8548994064331055
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.637728691101074
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.324051380157471
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.200395107269287
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.0843992233276367
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.387519359588623
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.2310612201690674
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.259484529495239
+      },
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.821990966796875
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.085305690765381
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.63753080368042
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.350565671920776
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.277353286743164
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.769869089126587
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.0497453212738037
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.185692548751831
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.14257287979126
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.2578983306884766
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.779123306274414
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.1007134914398193
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.0770928859710693
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.295859336853027
+      }
+    ]
+  },
+  {
+    "model": "gpt-oss:120b",
+    "date": "2026-10-06T20:05:35.893309+00:00",
+    "cases": 42,
+    "tool_routing_pass": "42/42",
+    "grounded_pass": "35/42",
+    "fallback_count": "0/42",
+    "median_latency": 3.402263641357422,
+    "max_latency": 5.830864667892456,
+    "per_case": [
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.03743839263916
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.3279011249542236
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 4.163324594497681
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 4.387522220611572
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.305105209350586
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.601418972015381
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.1794443130493164
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.402263641357422
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.184094429016113
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 3.2489287853240967
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.987067222595215
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.028489589691162
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.1645750999450684
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.830864667892456
+      },
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.126624345779419
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.36810564994812
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.461167573928833
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 3.2725021839141846
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.758612871170044
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.145265340805054
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.1665449142456055
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.9164230823516846
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 2.5207107067108154
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.964000940322876
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.074436902999878
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.2350683212280273
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.0847625732421875
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.798477411270142
+      },
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.3321807384490967
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.115089654922485
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 3.5060372352600098
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 3.6800389289855957
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.498343229293823
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.155772686004639
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.011197090148926
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.726904630661011
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.546051025390625
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.3493688106536865
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.2240118980407715
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.00247859954834
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.239863634109497
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.220250368118286
+      }
+    ]
+  },
+  {
+    "model": "gpt-oss:20b",
+    "date": "2026-10-06T20:09:49.414468+00:00",
+    "cases": 42,
+    "tool_routing_pass": "39/42",
+    "grounded_pass": "37/42",
+    "fallback_count": "0/42",
+    "median_latency": 6.027932405471802,
+    "max_latency": 12.61900019645691,
+    "per_case": [
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.347936630249023
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.819795370101929
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 6.523607969284058
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.7531280517578125
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.346719741821289
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.363232374191284
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.8087875843048096
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 8.429955959320068
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.34686803817749
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.9399964809417725
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.632640600204468
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.4318854808807373
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.8430452346801758
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 12.61900019645691
+      },
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.465890645980835
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 8.654630899429321
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 8.044363975524902
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.078002214431763
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.425609588623047
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.769439220428467
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 1.8976364135742188
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.84516978263855
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.859578609466553
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.151687860488892
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": false,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 8.473185062408447
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.9431354999542236
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.6660633087158203
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 12.149656057357788
+      },
+      {
+        "question": "What was the return rate in 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 4.974472284317017
+      },
+      {
+        "question": "Return rate for PROD-0052 in Q3 2024?",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 7.190852165222168
+      },
+      {
+        "question": "Top 3 return reasons for PROD-0052",
+        "expected_tools": [
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "top_return_reasons": {
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": false,
+        "seconds": 8.002098798751831
+      },
+      {
+        "question": "Which 3 products have the highest return rate?",
+        "expected_tools": [
+          "top_products_by_return_rate"
+        ],
+        "expected_params": {
+          "top_products_by_return_rate": {
+            "m": 30
+          }
+        },
+        "tools_used": [
+          "top_products_by_return_rate"
+        ],
+        "params_match": false,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.027932405471802
+      },
+      {
+        "question": "Total refunds in March 2024",
+        "expected_tools": [
+          "refund_total"
+        ],
+        "expected_params": {
+          "refund_total": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "refund_total"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.280255079269409
+      },
+      {
+        "question": "How good is the risk model?",
+        "expected_tools": [
+          "model_metrics"
+        ],
+        "expected_params": {},
+        "tools_used": [
+          "model_metrics"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.078078746795654
+      },
+      {
+        "question": "What is the weather in Paris?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.212569236755371
+      },
+      {
+        "question": "return rate last March",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-03-01",
+            "e": "2024-03-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 9.998171329498291
+      },
+      {
+        "question": "Q3 2024 return rate",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-07-01",
+            "e": "2024-09-30"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 5.003372669219971
+      },
+      {
+        "question": "return rate from 2024-06-01 to 2024-08-31",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-06-01",
+            "e": "2024-08-31"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 6.656540870666504
+      },
+      {
+        "question": "return rate for PROD-9999",
+        "expected_tools": [
+          "return_rate"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "p": "PROD-9999"
+          }
+        },
+        "tools_used": [
+          "return_rate"
+        ],
+        "params_match": false,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 7.579575300216675
+      },
+      {
+        "question": "Write me a poem",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 3.95294189453125
+      },
+      {
+        "question": "What will next month's return rate be?",
+        "expected_tools": [],
+        "expected_params": {},
+        "tools_used": [],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 2.0010786056518555
+      },
+      {
+        "question": "Return rate and top return reasons for PROD-0052 in 2024",
+        "expected_tools": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "expected_params": {
+          "return_rate": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          },
+          "top_return_reasons": {
+            "s": "2024-01-01",
+            "e": "2024-12-31",
+            "p": "PROD-0052"
+          }
+        },
+        "tools_used": [
+          "return_rate",
+          "top_return_reasons"
+        ],
+        "params_match": true,
+        "engine": "ollama",
+        "grounded": true,
+        "seconds": 11.920878887176514
+      }
+    ]
+  }
+]

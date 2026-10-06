@@ -57,6 +57,8 @@ def test_eval_llm_json_output(tmp_path, capsys):
     # Verify JSON file exists and has the expected structure
     assert out_file.exists()
     data = json.loads(out_file.read_text())
+    assert isinstance(data, list) and len(data) == 1
+    data = data[0]
     assert data["model"] == "dummy-model"
     assert data["cases"] == len(CASES)  # repeats=1
     # The per_case list should have one entry per case
@@ -84,3 +86,11 @@ def test_params_match_q3_prod_0052():
     bad = [{"tool": "return_rate", "params": {"s": "2024-07-01", "e": "2024-09-30", "p": "PROD-0001"}}]
     assert params_match(good, expect)
     assert not params_match(bad, expect)
+
+
+def test_out_file_keeps_every_model_in_run_order(tmp_path):
+    out_file = tmp_path / "eval.json"
+    run(["model-a", "model-b", "--out", str(out_file), "--repeats", "1"])
+    data = json.loads(out_file.read_text())
+    assert [d["model"] for d in data] == ["model-a", "model-b"]
+    assert all(len(d["per_case"]) == len(CASES) for d in data)
