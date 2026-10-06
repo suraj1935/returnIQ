@@ -88,6 +88,8 @@ _ORD = r"(?:st|nd|rd|th)?"
 _MD = re.compile(r"(?<![\w.,-])(" + _MON + r")\s+(\d{1,2})" + _ORD + r"(?:\s*(?:-|to|through)\s*(\d{1,2})" + _ORD
                  + r")?(?![\d,]\d|\.\d)")
 _DM = re.compile(r"(?<![\w.,-])(\d{1,2})" + _ORD + r"\s+(?:of\s+)?(" + _MON + r")(?!\w)")
+_MDY = re.compile(r"(?<![\w.,-])(" + _MON + r")\s+(\d{1,2})" + _ORD + r"[,\s]+((?:19|20)\d{2})\b")
+_DMY = re.compile(r"(?<![\w.,-])(\d{1,2})" + _ORD + r"\s+(?:of\s+)?(" + _MON + r")[,\s]+((?:19|20)\d{2})\b")
 _OF = re.compile(r"(?<![\w.])(\d+(?:,\d{3})*)\s+(?:out\s+)?of\s+(\d+(?:,\d{3})*)(?![\d.]\d)", re.I)
 
 
@@ -110,6 +112,8 @@ def _date_ok(f: "_Facts", month: int, day: int) -> bool:
     """True if month/day is an exact date in the tool data or falls inside a queried range."""
     from datetime import date, timedelta
     if any(int(d[5:7]) == month and int(d[8:10]) == day for d in f.dates):
+        return True
+    if any(int(d[5:7]) == month and int(d[8:10]) == day for d in f.as_of):  # written full date matching data_as_of
         return True
     for lo, hi in f.ranges:
         try:
@@ -205,9 +209,20 @@ def verify_grounding(answer: str, results: list[ToolResult]) -> tuple[bool, list
             bad.append(d)
     text_ = _ISO.sub(" ", text_)
 
+    # Pre-scan: "Month Day, Year" / "Day Month Year" that exactly matches a data_as_of
+    # → unlock that year so the full written date passes grounding
+    _as_of_years: set[str] = set()
+    for _m in _MDY.finditer(text_):
+        _mon, _day, _yr = _month_no(_m.group(1)), int(_m.group(2)), _m.group(3)
+        if any(d == f"{_yr}-{_mon:02d}-{_day:02d}" for d in f.as_of):
+            _as_of_years.add(_yr)
+    for _m in _DMY.finditer(text_):
+        _day, _mon, _yr = int(_m.group(1)), _month_no(_m.group(2)), _m.group(3)
+        if any(d == f"{_yr}-{_mon:02d}-{_day:02d}" for d in f.as_of):
+            _as_of_years.add(_yr)
     text_ = _check_dates(text_, f, bad)
 
-    years_ok = set(_YEAR.findall(blob))
+    years_ok = set(_YEAR.findall(blob)) | _as_of_years
     for y in _YEAR.findall(text_):
         if y not in years_ok:
             bad.append(y)
@@ -480,9 +495,15 @@ def ask(question: str, box: Toolbox | None = None, use_llm: bool | None = None) 
               "ollama": _ollama_answer, "rules": _rules_answer}[engine]
     try:
         text, results = runner(box, q)
-        if engine == "ollama" and text and not results and not re.search(r"\d", text):
-            return Answer(CANNOT_ANSWER, True, engine=engine)  # the LLM itself declined; never show its free text
-        if llm and (not text or not results):  # model skipped the tools -> deterministic path decides
+        if llm and text and not results and not re.search(r"\d", text):
+            # LLM declined with no digits (clean refusal) → try rules; if rules finds data use it,
+            # otherwise this is genuinely unanswerable: return CANNOT_ANSWER with the LLM engine name
+            _fb_text, _fb_results = _rules_answer(box, q)
+            if _fb_results:
+                engine, text, results = "rules(fallback)", _fb_text, _fb_results
+            else:
+                return Answer(CANNOT_ANSWER, True, engine=engine)
+        elif llm and (not text or not results):  # ungrounded numbers or exhausted rounds → rules decides
             engine, text, results = "rules(fallback)", *_rules_answer(box, q)
     except ToolError as ex:
         return Answer(f"Invalid request: {ex}", True, engine=engine)

@@ -206,3 +206,78 @@ def test_eval_llm_counts_fallbacks_separately(monkeypatch, capsys):
     ev.run(["m1"])
     out = capsys.readouterr().out
     assert "tool routing 1/7, grounded 1/7, fell back 6/7" in out
+
+
+# ---- Fix 1: unified LLM decline/fallback (all engines, mock _openai_compat_answer) -----------
+
+def _patch_llm(monkeypatch, engine, reply_text):
+    """Patch _openai_compat_answer to return a single text reply with no tool results.
+    Works for ollama, nvidia (and anthropic/gemini use different functions, but we test
+    the shared ask() logic via the openai-compat path for simplicity)."""
+    import ai.copilot as cp
+    calls = []
+
+    def fake(box, q, url, model, key, extra=None):
+        calls.append(model)
+        return reply_text, []
+
+    monkeypatch.setattr(cp, "_openai_compat_answer", fake)
+    monkeypatch.setenv("RETURNIQ_LLM", engine)
+    monkeypatch.setattr(cp, "OLLAMA_MODEL", "m1")
+    monkeypatch.setattr(cp, "NVIDIA_MODEL", "m1")
+    monkeypatch.delenv("RETURNIQ_OLLAMA_FALLBACKS", raising=False)
+    return calls
+
+
+def test_llm_digitless_decline_falls_back_to_rules_when_data_available(monkeypatch):
+    """LLM says 'Roughly a quarter of orders.' (no digits) for a return-rate question
+    → rules finds the real rate → answer comes back with engine 'rules(fallback)'."""
+    calls = _patch_llm(monkeypatch, "ollama", "Roughly a quarter of orders.")
+    a = ask("What was the return rate in 2024?")
+    assert a.engine == "rules(fallback)"
+    assert "return_rate" in a.citations[0]["tool"]
+    # The answer must contain the actual rate figure from the DB
+    assert any(c.isdigit() for c in a.answer), "Expected a numeric rate in the answer"
+    assert calls == ["m1"]
+
+
+def test_llm_digitless_decline_cannot_answer_when_no_rules_data(monkeypatch):
+    """LLM says 'I can only answer questions about returns.' for a weather question
+    → rules also finds nothing → CANNOT_ANSWER, no citations, LLM called exactly once."""
+    from ai.copilot import CANNOT_ANSWER
+    calls = _patch_llm(monkeypatch, "ollama", "I can only answer questions about returns.")
+    a = ask("What is the weather in Paris?")
+    assert a.answer == CANNOT_ANSWER
+    assert not a.citations
+    assert calls == ["m1"]
+
+
+# ---- Fix 2: written full dates that equal a data_as_of value pass grounding ----------------
+
+_FULL_RANGE = __import__('ai.tools', fromlist=['ToolResult']).ToolResult(
+    "return_rate", "q1", {},
+    [{"mature_orders": 10000, "returned_orders": 2226, "return_rate": 0.2226}],
+    1, False, "2024-12-31",
+)
+
+
+@pytest.mark.parametrize("claim", [
+    "as of December 31, 2024 the rate is 22.26%",
+    "as of 31 December 2024 the rate is 22.26%",
+])
+def test_grounding_accepts_written_full_date_matching_as_of(claim):
+    """Month-Day-Year written out should pass when it exactly equals a data_as_of date."""
+    ok, bad = verify_grounding(claim, [_FULL_RANGE])
+    assert ok, f"Expected pass but got bad={bad!r} for {claim!r}"
+
+
+def test_grounding_rejects_bare_year_with_full_range_data():
+    """'In 2024 the rate was ...' still fails when data has no year in params (data_as_of only)."""
+    ok, bad = verify_grounding("In 2024 the rate was 22.26%", [_FULL_RANGE])
+    assert not ok, "Bare year should still be rejected when no date params"
+
+
+def test_grounding_rejects_wrong_day_in_written_date():
+    """'December 30, 2024' does not match data_as_of '2024-12-31' → fails."""
+    ok, bad = verify_grounding("as of December 30, 2024 the rate is 22.26%", [_FULL_RANGE])
+    assert not ok, "Wrong day should fail"
