@@ -97,6 +97,7 @@ def run(models: list[str]) -> None:
                     "tools_used": sorted(list(used)),
                     "params_match": p_ok,
                     "engine": a.engine,
+                    "answer": a.answer,
                     "grounded": a.grounded,
                     "seconds": dt,
                 })

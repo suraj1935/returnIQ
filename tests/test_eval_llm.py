@@ -66,8 +66,9 @@ def test_eval_llm_json_output(tmp_path, capsys):
     assert len(data["per_case"]) == len(CASES)
     # Each entry must contain the required keys
     for entry in data["per_case"]:
-        for key in ["question", "expected_tools", "expected_params", "tools_used", "params_match", "engine", "grounded", "seconds"]:
+        for key in ["question", "expected_tools", "expected_params", "tools_used", "params_match", "engine", "answer", "grounded", "seconds"]:
             assert key in entry
+        assert isinstance(entry["answer"], str) and entry["answer"]
         # For weather/poem questions we expect no tools used and a fallback engine
         if "weather" in entry["question"].lower() or "poem" in entry["question"].lower():
             assert entry["tools_used"] == []
