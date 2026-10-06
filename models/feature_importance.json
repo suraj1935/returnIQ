@@ -1,14 +1,14 @@
 {
-  "prod_prior_return_rate": 0.05952,
-  "prod_prior_orders": 0.04278,
-  "cust_prior_orders": 0.03055,
-  "cust_prior_return_rate": 0.02224,
-  "cust_tenure_days": 0.02056,
-  "quantity": 0.01473,
-  "cust_prior_returns": 0.01148,
-  "unit_price": 0.01112,
-  "order_month": 0.01104,
-  "cust_days_since_last_order": 0.00668,
-  "order_dow": 0.00512,
-  "total_amount": 0.00229
+  "prod_prior_return_rate": 0.04493,
+  "prod_prior_orders": 0.02316,
+  "cust_prior_orders": 0.0219,
+  "cust_prior_return_rate": 0.01607,
+  "cust_tenure_days": 0.014,
+  "quantity": 0.01021,
+  "cust_prior_returns": 0.00779,
+  "unit_price": 0.00764,
+  "order_month": 0.00744,
+  "cust_days_since_last_order": 0.00484,
+  "order_dow": 0.00351,
+  "total_amount": 0.00183
 }

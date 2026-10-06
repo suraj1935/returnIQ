@@ -10,3 +10,6 @@ AGENTS.md
 .antigravity/
 skills/
 scripts/
+data/*.db
+data/synthetic/
+models/*.joblib

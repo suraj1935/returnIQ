@@ -1,0 +1,7 @@
+{
+  "n_test": 3984,
+  "prevalence": 0.2362,
+  "oracle_roc_auc": 0.6909,
+  "oracle_pr_auc": 0.427,
+  "oracle_brier": 0.1641
+}

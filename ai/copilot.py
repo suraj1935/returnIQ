@@ -1,13 +1,13 @@
 """
 ai/copilot.py - Returns Intelligence Copilot.
 
-Two interchangeable engines, same guarantees:
-  * LLM engine (ANTHROPIC_API_KEY set): Claude tool-calling over ai.tools whitelisted tools.
-  * Rule engine (default / offline): deterministic intent -> tool routing with templated answers.
+Interchangeable engines, same guarantees (pick with RETURNIQ_LLM or by available API keys):
+  * ollama (local or Ollama Cloud), nvidia (NIM), anthropic, gemini: LLM tool-calling over ai.tools.
+  * rules (default / offline / fallback): deterministic intent -> tool routing with templated answers.
 
 Guarantees enforced IN CODE (not by prompt):
-  1. Every number in the final answer must appear in a tool result (verify_grounding);
-     otherwise the answer is replaced by a refusal.
+  1. Every number, year, date and id in the final answer must match a tool result of the right
+     kind (verify_grounding); otherwise the answer is replaced by a refusal.
   2. No tool result / empty result => explicit "cannot be answered" message.
   3. Every answer carries citations (tool, query_id, params, data_as_of).
 """
@@ -24,7 +24,7 @@ from ai.tools import TOOL_SCHEMAS, ToolError, ToolResult, Toolbox, call_tool
 MODEL = os.environ.get("RETURNIQ_LLM_MODEL", "claude-sonnet-5-5")
 GEMINI_MODEL = os.environ.get("RETURNIQ_GEMINI_MODEL", "gemini-2.5-flash")
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/v1")
-OLLAMA_MODEL = os.environ.get("RETURNIQ_OLLAMA_MODEL", "qwen3:8b")
+OLLAMA_MODEL = os.environ.get("RETURNIQ_OLLAMA_MODEL", "gemma4:31b")
 NVIDIA_URL = os.environ.get("NVIDIA_URL", "https://integrate.api.nvidia.com/v1")
 NVIDIA_MODEL = os.environ.get("RETURNIQ_NVIDIA_MODEL", "meta/llama-3.3-70b-instruct")
 LLM_TIMEOUT_S = float(os.environ.get("RETURNIQ_LLM_TIMEOUT", "90"))
@@ -52,18 +52,59 @@ class Answer:
 
 
 # ---------------------------------------------------------------- grounding
+# A figure is "grounded" only if it is the RIGHT KIND of value from a tool result:
+#   * integer token   -> must equal an integer-valued tool field (counts), never a rounded rate
+#   * decimal token   -> must equal a tool value at that precision, or a rate (0..1) x100
+#   * percent token   -> must equal a rate (0..1) x100
+#   * years / ISO dates / entity ids -> must appear in tool params or rows (data_as_of only
+#     validates an exact ISO date, never a bare year, so "in 2023" cannot ride on 2024 data)
 _NUM = re.compile(r"(?<![\w.-])-?\d[\d,]*\.?\d*%?")
-_STRIP = re.compile(r"\b(?:PROD|ORD|CUST|RET)-\d+\b|\b\d{4}-\d{2}-\d{2}\b|\bQ[1-4]\b|\b30[- ]day\b|\b20\d{2}\b", re.I)
+_ID = re.compile(r"\b(?:PROD|ORD|CUST|RET)-\d+\b", re.I)
+_ISO = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+_YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
+_STRIP = re.compile(r"\bQ[1-4]\b|\b30[- ]day\b", re.I)
+_WORDS = {w: str(i) for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten eleven twelve".split())}
+_WORD_RE = re.compile(r"\b(" + "|".join(_WORDS) + r")\b", re.I)
 
 
-def _tool_numbers(results: list[ToolResult]) -> list[float]:
-    out: list[float] = []
+# LLMs emit typographic variants (non-breaking hyphen, narrow no-break space, minus sign...).
+# Fold them to ASCII BEFORE matching, otherwise "2024<U+2011>01<U+2011>01" slips past the date check
+# and "1<U+202F>234" is read as two numbers.
+_FOLD = {**{ord(c): "-" for c in map(chr, (0x2010, 0x2011, 0x2012, 0x2013, 0x2014, 0x2212))},
+         **{ord(c): " " for c in map(chr, (0x00A0, 0x2009, 0x202F))}}
+_DIGIT_GROUP = re.compile(r"(?<=\d) (?=\d{3}\b)")
+
+
+def _normalise(t: str) -> str:
+    return _DIGIT_GROUP.sub("", t.translate(_FOLD))
+
+
+@dataclass
+class _Facts:
+    ints: set
+    nums: list
+    strings: set
+    as_of: set
+
+
+def _facts(results: list[ToolResult]) -> _Facts:
+    f = _Facts(set(), [], set(), set())
 
     def walk(v):
-        if isinstance(v, bool):
+        if isinstance(v, bool) or v is None:
             return
-        if isinstance(v, (int, float)):
-            out.append(float(v))
+        if isinstance(v, int):
+            f.ints.add(v)
+            f.nums.append(float(v))
+        elif isinstance(v, float):
+            f.nums.append(v)
+            if v.is_integer() and abs(v) > 1:
+                f.ints.add(int(v))  # e.g. SUM() returned as 54909.0
+        elif isinstance(v, str):
+            f.strings.add(v.upper())
+            if _ISO.fullmatch(v):  # "March 1 - March 31" is derivable from a queried 2024-03-01..2024-03-31
+                f.ints.update(int(x) for x in v.split("-")[1:])
         elif isinstance(v, dict):
             for x in v.values():
                 walk(x)
@@ -73,38 +114,55 @@ def _tool_numbers(results: list[ToolResult]) -> list[float]:
 
     for r in results:
         walk(r.rows)
-        walk(r.row_count)
         walk(r.params)
-    return out
-
-
-_WORDS = {w: str(i) for i, w in enumerate(
-    "zero one two three four five six seven eight nine ten eleven twelve".split())}
-_WORD_RE = re.compile(r"\b(" + "|".join(_WORDS) + r")\b", re.I)
+        f.ints.add(int(r.row_count))
+        f.nums.append(float(r.row_count))
+        if r.data_as_of:
+            f.as_of.add(str(r.data_as_of))
+    return f
 
 
 def verify_grounding(answer: str, results: list[ToolResult]) -> tuple[bool, list[str]]:
-    """True iff every number in `answer` is explained by a tool value (exact, x100 as %, or rounded).
-    Spelled-out numbers (zero..twelve) are checked too ("three products" vs 2 rows)."""
-    allowed = _tool_numbers(results)
+    """(ok, unverified_tokens). See the block comment above for the matching rules."""
+    f = _facts(results)
     bad: list[str] = []
-    answer = re.sub(r"(?m)^\s*\d+[.)]\s", " ", answer)  # list markers are not figures
-    answer = _WORD_RE.sub(lambda m: _WORDS[m.group(1).lower()], answer)
-    for tok in _NUM.findall(_STRIP.sub(" ", answer)):
+    text_ = re.sub(r"(?m)^\s*\d+[.)]\s", " ", _normalise(answer))  # list markers are not figures
+    text_ = re.sub(r"(?m)^\s*\|\s*\d+\s*\|", "|", text_)            # markdown table rank cells
+    text_ = re.sub(r"(?i)(\d)\s*percent\b", r"\1%", text_)
+    text_ = _WORD_RE.sub(lambda m: _WORDS[m.group(1).lower()], text_)
+
+    blob = " ".join(f.strings)
+    for i in _ID.findall(text_):
+        if i.upper() not in f.strings and i.upper() not in blob:
+            bad.append(i)
+    text_ = _ID.sub(" ", text_)
+
+    iso_ok = {s for s in f.strings} | {s.upper() for s in f.as_of}
+    for d in _ISO.findall(text_):
+        if d not in iso_ok:
+            bad.append(d)
+    text_ = _ISO.sub(" ", text_)
+
+    years_ok = set(_YEAR.findall(blob))
+    for y in _YEAR.findall(text_):
+        if y not in years_ok:
+            bad.append(y)
+    text_ = _YEAR.sub(" ", text_)
+
+    rates = [n for n in f.nums if 0 <= n <= 1]
+    for tok in _NUM.findall(_STRIP.sub(" ", text_)):
         raw = tok.rstrip("%").replace(",", "").rstrip(".")
         if not raw or raw == "-":
             continue
         val = float(raw)
         dec = len(raw.split(".")[1]) if "." in raw else 0
-        pct = tok.endswith("%")
-        ok = False
-        for a in allowed:
-            for cand in ((a * 100,) if pct else (a, a * 100)):
-                if round(cand, dec) == round(val, dec) or abs(cand - val) <= 0.5 * 10 ** -dec:
-                    ok = True
-                    break
-            if ok:
-                break
+        if tok.endswith("%"):
+            ok = any(round(r * 100, dec) == round(val, dec) for r in rates)
+        elif dec == 0:
+            ok = int(val) in f.ints
+        else:
+            ok = (any(round(n, dec) == round(val, dec) for n in f.nums)
+                  or any(round(r * 100, dec) == round(val, dec) for r in rates))
         if not ok:
             bad.append(tok)
     return (not bad), bad
@@ -178,7 +236,8 @@ def _rules_answer(box: Toolbox, q: str) -> tuple[str, list[ToolResult]]:
         x = r.rows[0]
         return (f"Total refunded{scope} for {per}: {x['total_refund_amount']:.2f} "
                 f"across {x['returns_counted']} non-rejected returns."), [r]
-    if re.search(r"\b(top|worst|highest|which)\b.*\bproduct", ql) or re.search(r"\bproducts?\b.*\b(rate|return)", ql) and not prod:
+    if not prod and (re.search(r"\b(top|worst|highest|which)\b.*\bproduct", ql)
+                     or re.search(r"\bproducts?\b.*\b(rate|return)", ql)):
         r = box.top_products_by_return_rate(s, e, 50, 5)
         if r.empty:
             return f"No products meet the minimum volume for {per}.", [r]
@@ -290,9 +349,30 @@ def _openai_compat_answer(box: Toolbox, q: str, base_url: str, model: str,
     return "", results
 
 
+def _is_local(url: str) -> bool:
+    return any(h in url for h in ("localhost", "127.0.0.1", "[::1]"))
+
+
 def _ollama_answer(box, q):
-    # Thinking mode takes minutes on small GPUs and adds nothing to tool routing.
-    return _openai_compat_answer(box, q, OLLAMA_URL, OLLAMA_MODEL, None, {"reasoning_effort": "none"})
+    """Local Ollama or Ollama Cloud (OpenAI-compatible /v1). Tries OLLAMA_MODEL, then each model in
+    RETURNIQ_OLLAMA_FALLBACKS (comma separated); any failure falls through to the next, then to rules."""
+    api_key = os.environ.get("OLLAMA_API_KEY") or None
+    models = [OLLAMA_MODEL] + [m.strip() for m in os.environ.get("RETURNIQ_OLLAMA_FALLBACKS", "").split(",") if m.strip()]
+    last: Exception | None = None
+    for m in models:
+        # Local small-GPU models: thinking mode takes minutes and adds nothing to tool routing.
+        extra = {"reasoning_effort": "none"} if _is_local(OLLAMA_URL) and "gpt-oss" not in m else {}
+        try:
+            text, results = _openai_compat_answer(box, q, OLLAMA_URL, m, api_key, extra)
+            if results:
+                return text, results
+        except ToolError:
+            raise
+        except Exception as ex:  # timeout / 5xx / malformed tool call -> next model
+            last = ex
+    if last:
+        raise last
+    return "", []
 
 
 def _nvidia_answer(box, q):

@@ -56,8 +56,15 @@ class ToolError(ValueError):
     """Invalid arguments - surfaced to the model/user, never swallowed."""
 
 
+_NULLISH = {"", "all", "any", "none", "null", "n/a", "*"}
+
+
+def _blank(v) -> bool:
+    return v is None or (isinstance(v, str) and v.strip().lower() in _NULLISH)
+
+
 def _d(v: str | None, name: str) -> str | None:
-    if v is None:
+    if _blank(v):
         return None
     try:
         return date.fromisoformat(v).isoformat()
@@ -66,7 +73,10 @@ def _d(v: str | None, name: str) -> str | None:
 
 
 def _prod(v: str | None) -> str | None:
-    if v is not None and not _PROD_RE.match(v):
+    if _blank(v):
+        return None
+    v = v.strip().upper()
+    if not _PROD_RE.match(v):
         raise ToolError(f"product_id must look like PROD-0001, got {v!r}")
     return v
 
@@ -86,9 +96,10 @@ class Toolbox:
             r = c.execute(text("SELECT snapshot_date FROM analytics_meta LIMIT 1")).fetchone()
         return r[0] if r else None
 
-    def _run(self, tool: str, sql: str, params: dict, note: str = "") -> ToolResult:
+    def _run(self, tool: str, sql: str, params: dict, note: str = "", limit: int = MAX_ROWS) -> ToolResult:
+        limit = max(1, min(int(limit), MAX_ROWS))
         with self.engine.connect() as c:
-            rows = [dict(r._mapping) for r in c.execute(text(sql + f" LIMIT {MAX_ROWS}"), params)]
+            rows = [dict(r._mapping) for r in c.execute(text(sql + " LIMIT :_lim"), {**params, "_lim": limit})]
         shown = {k: v for k, v in params.items() if v is not None and v not in ("0000-01-01", "9999-12-31")}
         return ToolResult(tool, uuid.uuid4().hex[:8], shown, rows, len(rows), len(rows) == 0,
                           self._as_of(), note)
@@ -114,46 +125,44 @@ class Toolbox:
     def top_return_reasons(self, start_date: str | None = None, end_date: str | None = None,
                            product_id: str | None = None, limit: int = 5) -> ToolResult:
         p = _period(start_date, end_date, product_id)
-        return self._run("top_return_reasons", f"""
+        return self._run("top_return_reasons", """
             SELECT reason, COUNT(*) AS returns,
                    ROUND(1.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 4) AS share
             FROM analytics_returns_fact
             WHERE status <> 'rejected' AND order_date BETWEEN :s AND :e AND (:p IS NULL OR product_id = :p)
-            GROUP BY reason ORDER BY returns DESC, reason
-            LIMIT {max(1, min(int(limit), 20))} --""", p)
+            GROUP BY reason ORDER BY returns DESC, reason""", p, limit=min(int(limit), 20))
 
     def top_products_by_return_rate(self, start_date: str | None = None, end_date: str | None = None,
                                     min_orders: int = 50, limit: int = 5) -> ToolResult:
         p = _period(start_date, end_date)
         p["m"] = max(1, int(min_orders))
-        return self._run("top_products_by_return_rate", f"""
+        return self._run("top_products_by_return_rate", """
             SELECT product_id, COUNT(*) AS mature_orders, SUM(returned_30d) AS returned_orders,
                    ROUND(1.0 * SUM(returned_30d) / COUNT(*), 4) AS return_rate
             FROM analytics_order_features
             WHERE label_mature = 1 AND order_date BETWEEN :s AND :e
             GROUP BY product_id HAVING COUNT(*) >= :m
-            ORDER BY return_rate DESC, product_id
-            LIMIT {max(1, min(int(limit), 20))} --""", p,
-            f"Only products with at least {p['m']} mature orders are ranked.")
+            ORDER BY return_rate DESC, product_id""", p,
+            f"Only products with at least {p['m']} mature orders are ranked.", limit=min(int(limit), 20))
 
     def refund_total(self, start_date: str | None = None, end_date: str | None = None,
                      product_id: str | None = None) -> ToolResult:
         r = self._run("refund_total", """
             SELECT COUNT(*) AS returns_counted, ROUND(SUM(refund_amount), 2) AS total_refund_amount
             FROM analytics_returns_fact
-            WHERE status <> 'rejected' AND return_date BETWEEN :s AND :e AND (:p IS NULL OR product_id = :p)""",
+            WHERE status <> 'rejected' AND order_date BETWEEN :s AND :e AND (:p IS NULL OR product_id = :p)""",
             _period(start_date, end_date, product_id),
-            "Filtered by return_date; excludes rejected returns.")
+            "Refunds on orders placed in the period (same order-date basis as return_rate); excludes rejected returns.")
         return self._empty_if_zero(r, "returns_counted")
 
     def high_risk_orders(self, limit: int = 10) -> ToolResult:
-        return self._run("high_risk_orders", f"""
+        return self._run("high_risk_orders", """
             SELECT s.order_id, f.product_id, f.order_date, s.risk_score
             FROM analytics_risk_scores s JOIN analytics_order_features f ON f.order_id = s.order_id
             WHERE f.label_mature = 0
-            ORDER BY s.risk_score DESC, s.order_id
-            LIMIT {max(1, min(int(limit), 20))} --""", {},
-            "Recent orders whose 30-day outcome is not yet observed, ranked by model risk score (synthetic data).")
+            ORDER BY s.risk_score DESC, s.order_id""", {},
+            "Recent orders whose 30-day outcome is not yet observed, ranked by model risk score (synthetic data).",
+            limit=min(int(limit), 20))
 
     def model_metrics(self) -> ToolResult:
         f = MODELS_DIR / "metrics.json"

@@ -3,7 +3,7 @@ ml/train.py - return-risk model: LR baseline -> HistGradientBoosting, time-based
 
 Split (by order_date, mature labels only):  train < VAL_START <= val < TEST_START <= test
 Threshold is chosen on VAL (max F1) and frozen before touching TEST.
-Metrics: PR-AUC (primary), ROC-AUC, Brier, precision/recall/F1 @ threshold, vs prevalence baseline.
+Metrics: PR-AUC (primary), ROC-AUC, Brier (vs constant-prevalence baseline), precision/recall/F1 @ threshold, vs prevalence baseline.
 Artifacts: models/model.joblib, models/metrics.json, models/feature_importance.json (SHAP).
 """
 from __future__ import annotations
@@ -23,7 +23,6 @@ from sklearn.metrics import (average_precision_score, brier_score_loss, f1_score
                              precision_recall_curve, precision_score, recall_score, roc_auc_score)
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils.class_weight import compute_sample_weight
 from sqlalchemy import text
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -43,6 +42,7 @@ def _metrics(y, p, thr):
         "pr_auc": round(float(average_precision_score(y, p)), 4),
         "roc_auc": round(float(roc_auc_score(y, p)), 4),
         "brier": round(float(brier_score_loss(y, p)), 4),
+        "brier_constant_baseline": round(float(y.mean() * (1 - y.mean())), 4),
         "threshold": round(float(thr), 4),
         "precision": round(float(precision_score(y, pred, zero_division=0)), 4),
         "recall": round(float(recall_score(y, pred)), 4),
@@ -67,13 +67,14 @@ def train() -> dict:
     assert tr.order_date.max() < va.order_date.min() <= va.order_date.max() < te.order_date.min()
     X = lambda d: d[FEATURE_COLS].astype(float)
 
-    lr = make_pipeline(StandardScaler(), LogisticRegression(class_weight="balanced", max_iter=1000, random_state=SEED))
+    lr = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000, random_state=SEED))
     lr.fit(X(tr), tr.returned_30d)
 
-    sw = compute_sample_weight("balanced", tr.returned_30d)
+    # No class/sample weighting: it inflates probabilities (Brier worse than a constant guess) and adds
+    # nothing for ranking, because the decision threshold is tuned on VAL anyway.
     gb = HistGradientBoostingClassifier(max_depth=4, learning_rate=0.05, max_iter=300,
                                         early_stopping=True, random_state=SEED)
-    gb.fit(X(tr), tr.returned_30d, sample_weight=sw)
+    gb.fit(X(tr), tr.returned_30d)
 
     results, models = {}, {"logistic_regression": lr, "hist_gradient_boosting": gb}
     for name, m in models.items():

@@ -24,7 +24,7 @@ START, SNAPSHOT_DATE = date(2023, 1, 1), date(2024, 12, 31)
 REASONS = ["defective", "wrong_item", "changed_mind", "not_as_described", "other"]
 
 
-def generate(n_customers=3000, n_products=150, n_orders=25000, seed=42):
+def generate(n_customers=3000, n_products=150, n_orders=25000, seed=42, return_truth=False):
     rng = np.random.default_rng(seed)
     cust_prop = rng.gamma(shape=0.8, scale=0.6, size=n_customers)          # mean ~0.5
     prod_defect = rng.beta(1.2, 12, size=n_products)                       # mean ~0.09
@@ -75,6 +75,8 @@ def generate(n_customers=3000, n_products=150, n_orders=25000, seed=42):
         "refund_amount": np.round(orders.total_amount.values[idx] * frac, 2),
         "status": status,
     })
+    if return_truth:  # true generating probability per order, for the model-ceiling analysis
+        return orders, returns, pd.Series(p_ret, index=orders.order_id.values, name="true_p")
     return orders, returns
 
 

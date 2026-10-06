@@ -64,3 +64,47 @@ def test_grounding_checks_spelled_out_numbers():
     ok, bad = verify_grounding("The three products with the highest rate.", two_rows)
     assert not ok and "3" in bad
     assert verify_grounding("The two products with the highest rate.", two_rows)[0]
+
+
+RATE_2024 = ToolResult("return_rate", "q1", {"s": "2024-01-01", "e": "2024-12-31"},
+                       [{"mature_orders": 1200, "returned_orders": 280, "return_rate": 0.2333}], 1, False, "2024-12-31")
+
+
+@pytest.mark.parametrize("claim", [
+    "In 2023 the return rate was 23.33%",        # wrong period
+    "The rate across 23 orders was high",         # rate reused as a count
+    "280 of 1200 for PROD-0001",                  # entity never queried
+    "On 2024-06-01 the rate was 23.33%",          # date not in params
+])
+def test_grounding_rejects_right_number_wrong_context(claim):
+    assert not verify_grounding(claim, [RATE_2024])[0]
+
+
+@pytest.mark.parametrize("claim", [
+    "In 2024 the rate was 23.33% (280 of 1200)",
+    "The rate is 23.3 percent.",
+    "Data as of 2024-12-31: 280 returned of 1200 mature orders.",
+])
+def test_grounding_accepts_correct_claims(claim):
+    assert verify_grounding(claim, [RATE_2024])[0]
+
+
+def test_year_cannot_ride_on_data_as_of():
+    full_range = ToolResult("return_rate", "q2", {}, [{"return_rate": 0.2333}], 1, False, "2024-12-31")
+    assert not verify_grounding("In 2024 the rate was 23.33%", [full_range])[0]
+
+
+def test_top_rate_for_specific_product_is_not_routed_to_ranking():
+    a = ask("top return rate for product PROD-0052")
+    assert a.citations[0]["tool"] == "return_rate" and "PROD-0052" in a.answer
+
+
+@pytest.mark.parametrize("val", ["ALL", "", "null", "None", " all "])
+def test_tools_treat_nullish_filters_as_no_filter(val):
+    box = Toolbox()
+    assert box.return_rate(product_id=val).rows == box.return_rate().rows
+
+
+def test_refund_total_uses_order_date_basis():
+    box = Toolbox()
+    assert "order" in box.refund_total("2024-01-01", "2024-03-31").note.lower()

@@ -1,5 +1,5 @@
 {
-  "version": "20261006080108",
+  "version": "20261006151759",
   "selected": "logistic_regression",
   "synthetic_data": true,
   "split": {
@@ -24,48 +24,52 @@
       "val": {
         "n": 4101,
         "prevalence": 0.2195,
-        "pr_auc": 0.3316,
-        "roc_auc": 0.6415,
-        "brier": 0.2336,
-        "threshold": 0.4755,
-        "precision": 0.2947,
-        "recall": 0.6489,
-        "f1": 0.4053
+        "pr_auc": 0.332,
+        "roc_auc": 0.6416,
+        "brier": 0.1641,
+        "brier_constant_baseline": 0.1713,
+        "threshold": 0.207,
+        "precision": 0.295,
+        "recall": 0.65,
+        "f1": 0.4058
       },
       "test": {
         "n": 3984,
         "prevalence": 0.2362,
-        "pr_auc": 0.351,
-        "roc_auc": 0.6357,
-        "brier": 0.2346,
-        "threshold": 0.4755,
-        "precision": 0.3077,
-        "recall": 0.6419,
-        "f1": 0.416
+        "pr_auc": 0.3514,
+        "roc_auc": 0.6363,
+        "brier": 0.173,
+        "brier_constant_baseline": 0.1804,
+        "threshold": 0.207,
+        "precision": 0.308,
+        "recall": 0.6536,
+        "f1": 0.4187
       }
     },
     "hist_gradient_boosting": {
       "val": {
         "n": 4101,
         "prevalence": 0.2195,
-        "pr_auc": 0.3171,
-        "roc_auc": 0.6255,
-        "brier": 0.2433,
-        "threshold": 0.4965,
-        "precision": 0.2976,
-        "recall": 0.6022,
-        "f1": 0.3984
+        "pr_auc": 0.3075,
+        "roc_auc": 0.6133,
+        "brier": 0.1696,
+        "brier_constant_baseline": 0.1713,
+        "threshold": 0.2352,
+        "precision": 0.2808,
+        "recall": 0.6278,
+        "f1": 0.388
       },
       "test": {
         "n": 3984,
         "prevalence": 0.2362,
-        "pr_auc": 0.3412,
-        "roc_auc": 0.6212,
-        "brier": 0.2567,
-        "threshold": 0.4965,
-        "precision": 0.3002,
-        "recall": 0.6769,
-        "f1": 0.4159
+        "pr_auc": 0.3331,
+        "roc_auc": 0.6071,
+        "brier": 0.1805,
+        "brier_constant_baseline": 0.1804,
+        "threshold": 0.2352,
+        "precision": 0.2668,
+        "recall": 0.7705,
+        "f1": 0.3964
       }
     }
   }

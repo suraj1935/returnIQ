@@ -88,9 +88,17 @@ def build(engine=None) -> dict:
     allo = orders.sort_values(["customer_id", "order_date"])
     first = allo.groupby("customer_id")["order_date"].min()
     base["cust_tenure_days"] = (base.order_date - base.customer_id.map(first)).dt.days
-    prev = (allo.assign(prev_date=allo.groupby("customer_id")["order_date"].shift(1))
-            .drop_duplicates("order_id").set_index("order_id")["prev_date"])
-    base["cust_days_since_last_order"] = (base.order_date - base.order_id.map(prev)).dt.days.fillna(-1)
+    # Previous order strictly BEFORE this order's date (same-day orders are not "previous"),
+    # consistent with the strict-< rule used for cust_prior_orders.
+    uniq = {k: np.sort(g.values.astype("datetime64[ns]")) for k, g in allo.groupby("customer_id")["order_date"].unique().items()
+            for g in [pd.Series(g)]}
+    prev_days = np.full(len(base), -1.0)
+    for i, (k, d) in enumerate(zip(base.customer_id.values, base.order_date.values.astype("datetime64[ns]"))):
+        arr = uniq[k]
+        pos = np.searchsorted(arr, d, side="left")
+        if pos > 0:
+            prev_days[i] = (d - arr[pos - 1]) / np.timedelta64(1, "D")
+    base["cust_days_since_last_order"] = prev_days
 
     base["order_dow"] = base.order_date.dt.dayofweek
     base["order_month"] = base.order_date.dt.month

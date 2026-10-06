@@ -45,7 +45,11 @@ from pathlib import Path
 from typing import Any
 import argparse
 
-import pandas as pd
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import backend  # noqa: E402,F401  (loads .env)
+import pandas as pd  # noqa: E402
 from sqlalchemy import CheckConstraint, event, or_
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 from sqlalchemy import (
