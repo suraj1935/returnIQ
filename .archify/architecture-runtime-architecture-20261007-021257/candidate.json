@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Runtime Architecture",
+    "output": "docs/architecture/runtime-architecture.html"
+  },
+  "components": [
+    {"id": "synthetic", "type": "backend", "label": "synthetic.py"},
+    {"id": "ingestion", "type": "backend", "label": "ingestion.py"},
+    {"id": "features", "type": "backend", "label": "features.py"},
+    {"id": "train", "type": "backend", "label": "train.py"},
+    {"id": "ceiling", "type": "backend", "label": "ceiling.py"},
+    {"id": "report", "type": "backend", "label": "report.py"},
+    {"id": "db", "type": "database", "label": "SQLite DB"},
+    {"id": "models", "type": "external", "label": "models/"},
+    {"id": "frontend", "type": "frontend", "label": "index.html"},
+    {"id": "api", "type": "backend", "label": "FastAPI"},
+    {"id": "copilot", "type": "backend", "label": "copilot"},
+    {"id": "tools", "type": "backend", "label": "SQL tools"}
+  ],
+  "connections": [
+    {"from": "synthetic", "to": "ingestion"},
+    {"from": "ingestion", "to": "features"},
+    {"from": "features", "to": "train"},
+    {"from": "train", "to": "ceiling"},
+    {"from": "ceiling", "to": "report"},
+    {"from": "report", "to": "db"},
+    {"from": "db", "to": "models"},
+    {"from": "frontend", "to": "api"},
+    {"from": "api", "to": "copilot"},
+    {"from": "copilot", "to": "tools"},
+    {"from": "tools", "to": "db"}
+  ]
+}

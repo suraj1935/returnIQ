@@ -1,0 +1,400 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "ReturnIQ Copilot Grounding Flow",
+    "output": "docs/architecture/copilot-flow.html",
+    "quality_profile": "showcase",
+    "viewBox": [1280, 760],
+    "column_fit": "spread",
+    "repository": {
+      "url": "https://github.com/suraj1935/returnIQ.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "e3cf9a573bd51d97a6dfd1ea094210b8f62a5f26"
+    }
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "User",
+      "sublabel": "asks a returns question",
+      "sources": [
+        {
+          "path": "frontend/index.html",
+          "line": 48,
+          "end_line": 55,
+          "label": "UI request"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "/copilot/ask",
+      "sources": [
+        {
+          "path": "backend/main.py",
+          "line": 74,
+          "end_line": 78,
+          "label": "route"
+        },
+        {
+          "path": "backend/schemas.py",
+          "line": 8,
+          "end_line": 24,
+          "label": "schemas"
+        }
+      ]
+    },
+    {
+      "id": "copilot",
+      "type": "backend",
+      "label": "Copilot",
+      "sublabel": "ask() orchestrator",
+      "sources": [
+        {
+          "path": "ai/copilot.py",
+          "line": 520,
+          "end_line": 556,
+          "label": "ask"
+        },
+        {
+          "path": "ai/copilot.py",
+          "line": 54,
+          "end_line": 70,
+          "label": "data window"
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "external",
+      "label": "Configured LLM",
+      "sublabel": "tool-calling provider",
+      "sources": [
+        {
+          "path": "ai/copilot.py",
+          "line": 430,
+          "end_line": 480,
+          "label": "OpenAI-compatible"
+        },
+        {
+          "path": "README.md",
+          "line": 89,
+          "end_line": 91,
+          "label": "env"
+        }
+      ]
+    },
+    {
+      "id": "rules",
+      "type": "backend",
+      "label": "Rules engine",
+      "sublabel": "default and fallback",
+      "sources": [
+        {
+          "path": "ai/copilot.py",
+          "line": 312,
+          "end_line": 364,
+          "label": "rules"
+        },
+        {
+          "path": "ai/copilot.py",
+          "line": 531,
+          "end_line": 545,
+          "label": "fallback"
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "Fixed SQL tools",
+      "sublabel": "7 tool schemas",
+      "sources": [
+        {
+          "path": "ai/tools.py",
+          "line": 117,
+          "end_line": 180,
+          "label": "methods"
+        },
+        {
+          "path": "ai/tools.py",
+          "line": 187,
+          "end_line": 208,
+          "label": "schemas"
+        }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "SQLite analytics",
+      "sublabel": "read-only connection",
+      "sources": [
+        {
+          "path": "backend/db.py",
+          "line": 21,
+          "end_line": 32,
+          "label": "read-only"
+        },
+        {
+          "path": "ai/tools.py",
+          "line": 99,
+          "end_line": 164,
+          "label": "queries"
+        }
+      ]
+    },
+    {
+      "id": "grounding",
+      "type": "security",
+      "label": "Grounding gate",
+      "sublabel": "verify numbers, dates and IDs",
+      "sources": [
+        {
+          "path": "ai/copilot.py",
+          "line": 216,
+          "end_line": 256,
+          "label": "verify"
+        },
+        {
+          "path": "ai/copilot.py",
+          "line": 548,
+          "end_line": 552,
+          "label": "withhold"
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 250,
+      "label": "Prompt Setup"
+    },
+    {
+      "from": 260,
+      "to": 470,
+      "label": "Tool Grounding"
+    },
+    {
+      "from": 480,
+      "to": 650,
+      "label": "Answer Gate"
+    }
+  ],
+  "messages": [
+    {
+      "id": "post-question",
+      "from": "user",
+      "to": "api",
+      "y": 160,
+      "label": "POST /copilot/ask"
+    },
+    {
+      "id": "call-ask",
+      "from": "api",
+      "to": "copilot",
+      "y": 190,
+      "label": "ask(question, Toolbox)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "read-window",
+      "from": "copilot",
+      "to": "db",
+      "y": 225,
+      "label": "SELECT data date range",
+      "variant": "security"
+    },
+    {
+      "id": "window-back",
+      "from": "db",
+      "to": "copilot",
+      "y": 255,
+      "label": "min order date and snapshot",
+      "variant": "return"
+    },
+    {
+      "id": "llm-request",
+      "from": "copilot",
+      "to": "llm",
+      "y": 300,
+      "label": "system prompt with data range and tool schemas",
+      "variant": "emphasis"
+    },
+    {
+      "id": "llm-tool-call",
+      "from": "llm",
+      "to": "copilot",
+      "y": 335,
+      "label": "tool call or no-tool reply",
+      "variant": "return"
+    },
+    {
+      "id": "fallback-rules",
+      "from": "copilot",
+      "to": "rules",
+      "y": 370,
+      "label": "LLM error or skipped tools",
+      "variant": "dashed",
+      "note": "Rules are also used directly when no LLM is configured."
+    },
+    {
+      "id": "call-tool",
+      "from": "copilot",
+      "to": "tools",
+      "y": 410,
+      "label": "call fixed tool with validated params"
+    },
+    {
+      "id": "rules-tool",
+      "from": "rules",
+      "to": "tools",
+      "y": 445,
+      "label": "deterministic tool route",
+      "variant": "dashed"
+    },
+    {
+      "id": "sql-select",
+      "from": "tools",
+      "to": "db",
+      "y": 485,
+      "label": "read-only SELECT over analytics_*",
+      "variant": "security"
+    },
+    {
+      "id": "sql-result",
+      "from": "db",
+      "to": "tools",
+      "y": 520,
+      "label": "rows, query_id, data_as_of",
+      "variant": "return"
+    },
+    {
+      "id": "tool-result",
+      "from": "tools",
+      "to": "copilot",
+      "y": 555,
+      "label": "ToolResult citations",
+      "variant": "return"
+    },
+    {
+      "id": "draft-answer",
+      "from": "copilot",
+      "to": "llm",
+      "y": 590,
+      "label": "send tool results for final answer",
+      "variant": "dashed"
+    },
+    {
+      "id": "answer-text",
+      "from": "llm",
+      "to": "copilot",
+      "y": 625,
+      "label": "answer text",
+      "variant": "return"
+    },
+    {
+      "id": "verify-answer",
+      "from": "copilot",
+      "to": "grounding",
+      "y": 660,
+      "label": "verify numbers, dates and IDs",
+      "variant": "security",
+      "note": "Forecast or out-of-scope questions are refused before historical numbers are stated."
+    },
+    {
+      "id": "grounded-response",
+      "from": "grounding",
+      "to": "api",
+      "y": 695,
+      "label": "grounded answer or withheld refusal",
+      "variant": "return"
+    },
+    {
+      "id": "api-response",
+      "from": "api",
+      "to": "user",
+      "y": 730,
+      "label": "AskResponse with citations",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "api",
+      "from": 185,
+      "to": 735,
+      "type": "backend"
+    },
+    {
+      "participant": "copilot",
+      "from": 190,
+      "to": 700,
+      "type": "backend"
+    },
+    {
+      "participant": "llm",
+      "from": 295,
+      "to": 630,
+      "type": "external"
+    },
+    {
+      "participant": "rules",
+      "from": 365,
+      "to": 450,
+      "type": "backend"
+    },
+    {
+      "participant": "tools",
+      "from": 405,
+      "to": 560,
+      "type": "backend"
+    },
+    {
+      "participant": "db",
+      "from": 220,
+      "to": 525,
+      "type": "database"
+    },
+    {
+      "participant": "grounding",
+      "from": 655,
+      "to": 700,
+      "type": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Data Window",
+      "items": [
+        "_system_prompt reads the data window and tells the model to resolve relative dates against the snapshot.",
+        "The date range is source evidence for temporal answers, not today's date."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Fixed Tool Surface",
+      "items": [
+        "The model can only request named tool schemas.",
+        "call_tool rejects unknown tool names.",
+        "Each tool returns query_id, params, rows and data_as_of."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Refusal Paths",
+      "items": [
+        "LLM errors, missing tool calls or unusable numeric replies fall back to rules.",
+        "Forecast questions are refused by rules.",
+        "verify_grounding withholds answers whose figures cannot be matched to tool results."
+      ]
+    }
+  ]
+}

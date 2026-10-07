@@ -1,0 +1,584 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ReturnIQ Runtime Architecture",
+    "output": "docs/architecture/runtime-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/suraj1935/returnIQ.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "e3cf9a573bd51d97a6dfd1ea094210b8f62a5f26"
+    },
+    "views": [
+      {
+        "id": "batch-path",
+        "label": "Batch Pipeline",
+        "focus": [
+          "manual_run",
+          "synthetic",
+          "ingestion",
+          "features",
+          "training",
+          "ceiling",
+          "reporting",
+          "sqlite_store",
+          "models_store"
+        ],
+        "note": "Manual scripts build SQLite analytics tables and model artifacts."
+      },
+      {
+        "id": "copilot-path",
+        "label": "Copilot Serving",
+        "focus": [
+          "frontend",
+          "fastapi",
+          "copilot",
+          "llm_provider",
+          "rules_engine",
+          "sql_tools",
+          "sqlite_store",
+          "models_store"
+        ],
+        "note": "Serving reads analytics tables and model files, then returns grounded answers."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "manual_run",
+      "type": "external",
+      "label": "Manual batch run",
+      "sublabel": "README command list",
+      "icon": "person",
+      "sources": [
+        {
+          "path": "README.md",
+          "line": 59,
+          "end_line": 65,
+          "label": "commands"
+        }
+      ],
+      "pos": [40, 130],
+      "size": [150, 62]
+    },
+    {
+      "id": "synthetic",
+      "type": "backend",
+      "label": "Synthetic data",
+      "sublabel": "pipelines/synthetic.py",
+      "sources": [
+        {
+          "path": "pipelines/synthetic.py",
+          "line": 27,
+          "end_line": 91,
+          "label": "generate CSV"
+        }
+      ],
+      "pos": [250, 130],
+      "size": [160, 62]
+    },
+    {
+      "id": "ingestion",
+      "type": "backend",
+      "label": "Ingestion",
+      "sublabel": "validates and upserts raw rows",
+      "sources": [
+        {
+          "path": "pipelines/ingestion.py",
+          "line": 203,
+          "end_line": 253,
+          "label": "raw tables"
+        },
+        {
+          "path": "pipelines/ingestion.py",
+          "line": 462,
+          "end_line": 510,
+          "label": "run order"
+        }
+      ],
+      "pos": [470, 130],
+      "size": [170, 62]
+    },
+    {
+      "id": "features",
+      "type": "backend",
+      "label": "Feature builder",
+      "sublabel": "raw_* to analytics_*",
+      "sources": [
+        {
+          "path": "pipelines/features.py",
+          "line": 54,
+          "end_line": 127,
+          "label": "analytics tables"
+        }
+      ],
+      "pos": [700, 130],
+      "size": [170, 62]
+    },
+    {
+      "id": "training",
+      "type": "backend",
+      "label": "Train model",
+      "sublabel": "ml/train.py",
+      "sources": [
+        {
+          "path": "ml/train.py",
+          "line": 59,
+          "end_line": 126,
+          "label": "train and score"
+        }
+      ],
+      "pos": [940, 80],
+      "size": [155, 62]
+    },
+    {
+      "id": "ceiling",
+      "type": "backend",
+      "label": "Oracle ceiling",
+      "sublabel": "ml/ceiling.py",
+      "sources": [
+        {
+          "path": "ml/ceiling.py",
+          "line": 24,
+          "end_line": 34,
+          "label": "ceiling"
+        }
+      ],
+      "pos": [940, 185],
+      "size": [155, 62]
+    },
+    {
+      "id": "reporting",
+      "type": "backend",
+      "label": "Report charts",
+      "sublabel": "ml/report.py",
+      "sources": [
+        {
+          "path": "ml/report.py",
+          "line": 91,
+          "end_line": 99,
+          "label": "charts"
+        }
+      ],
+      "pos": [1160, 130],
+      "size": [155, 62]
+    },
+    {
+      "id": "sqlite_store",
+      "type": "database",
+      "label": "SQLite database",
+      "sublabel": "raw, quarantine and analytics tables",
+      "sources": [
+        {
+          "path": "backend/db.py",
+          "line": 13,
+          "end_line": 18,
+          "label": "engine"
+        },
+        {
+          "path": "pipelines/features.py",
+          "line": 120,
+          "end_line": 127,
+          "label": "analytics writes"
+        },
+        {
+          "path": "ml/train.py",
+          "line": 124,
+          "end_line": 126,
+          "label": "risk scores"
+        }
+      ],
+      "pos": [620, 330],
+      "size": [245, 78]
+    },
+    {
+      "id": "models_store",
+      "type": "database",
+      "label": "models/ folder",
+      "sublabel": "model.joblib and JSON metrics",
+      "sources": [
+        {
+          "path": "ml/train.py",
+          "line": 33,
+          "end_line": 33,
+          "label": "path"
+        },
+        {
+          "path": "ml/train.py",
+          "line": 107,
+          "end_line": 117,
+          "label": "artifacts"
+        },
+        {
+          "path": "ml/ceiling.py",
+          "line": 34,
+          "end_line": 34,
+          "label": "ceiling"
+        }
+      ],
+      "pos": [940, 330],
+      "size": [190, 78]
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "Frontend",
+      "sublabel": "frontend/index.html",
+      "sources": [
+        {
+          "path": "frontend/index.html",
+          "line": 23,
+          "end_line": 55,
+          "label": "Copilot UI"
+        }
+      ],
+      "pos": [80, 570],
+      "size": [150, 62]
+    },
+    {
+      "id": "fastapi",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "backend/main.py",
+      "sources": [
+        {
+          "path": "backend/main.py",
+          "line": 17,
+          "end_line": 21,
+          "label": "app and box"
+        },
+        {
+          "path": "backend/main.py",
+          "line": 74,
+          "end_line": 85,
+          "label": "routes"
+        }
+      ],
+      "pos": [310, 570],
+      "size": [150, 62]
+    },
+    {
+      "id": "copilot",
+      "type": "backend",
+      "label": "Copilot",
+      "sublabel": "ai/copilot.py",
+      "sources": [
+        {
+          "path": "ai/copilot.py",
+          "line": 520,
+          "end_line": 556,
+          "label": "ask flow"
+        },
+        {
+          "path": "ai/copilot.py",
+          "line": 54,
+          "end_line": 70,
+          "label": "data range"
+        },
+        {
+          "path": "ai/copilot.py",
+          "line": 216,
+          "end_line": 256,
+          "label": "grounding"
+        }
+      ],
+      "pos": [540, 570],
+      "size": [150, 62]
+    },
+    {
+      "id": "sql_tools",
+      "type": "backend",
+      "label": "7 fixed SQL tools",
+      "sublabel": "read-only Toolbox",
+      "sources": [
+        {
+          "path": "ai/tools.py",
+          "line": 5,
+          "end_line": 5,
+          "label": "fixed SQL"
+        },
+        {
+          "path": "ai/tools.py",
+          "line": 117,
+          "end_line": 180,
+          "label": "tool methods"
+        },
+        {
+          "path": "ai/tools.py",
+          "line": 187,
+          "end_line": 208,
+          "label": "schemas"
+        }
+      ],
+      "pos": [780, 570],
+      "size": [170, 62]
+    },
+    {
+      "id": "llm_provider",
+      "type": "external",
+      "label": "Configured LLM",
+      "sublabel": "Ollama-compatible, gemma4:31b default model",
+      "sources": [
+        {
+          "path": "ai/copilot.py",
+          "line": 28,
+          "end_line": 29,
+          "label": "Ollama defaults"
+        },
+        {
+          "path": "ai/copilot.py",
+          "line": 430,
+          "end_line": 480,
+          "label": "tool calling"
+        },
+        {
+          "path": "README.md",
+          "line": 89,
+          "end_line": 91,
+          "label": "env config"
+        }
+      ],
+      "pos": [520, 725],
+      "size": [205, 68]
+    },
+    {
+      "id": "rules_engine",
+      "type": "backend",
+      "label": "Rules engine",
+      "sublabel": "default without LLM and fallback",
+      "sources": [
+        {
+          "path": "ai/copilot.py",
+          "line": 312,
+          "end_line": 364,
+          "label": "rules"
+        },
+        {
+          "path": "ai/copilot.py",
+          "line": 506,
+          "end_line": 545,
+          "label": "fallback"
+        }
+      ],
+      "pos": [780, 725],
+      "size": [170, 68]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Batch pipeline, run by hand",
+      "wraps": ["manual_run", "synthetic", "ingestion", "features", "training", "ceiling", "reporting"],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "Serving path",
+      "wraps": ["frontend", "fastapi", "copilot", "sql_tools", "llm_provider", "rules_engine"],
+      "pad": 24
+    },
+    {
+      "kind": "security-group",
+      "label": "Read-only boundary for Copilot SQL",
+      "wraps": ["fastapi", "copilot", "sql_tools"],
+      "pad": 12
+    }
+  ],
+  "connections": [
+    {
+      "id": "manual-to-synthetic",
+      "from": "manual_run",
+      "to": "synthetic",
+      "label": "python pipelines/synthetic.py"
+    },
+    {
+      "id": "synthetic-to-ingestion",
+      "from": "synthetic",
+      "to": "ingestion",
+      "label": "orders.csv and returns.csv"
+    },
+    {
+      "id": "ingestion-to-features",
+      "from": "ingestion",
+      "to": "features",
+      "label": "then build features"
+    },
+    {
+      "id": "features-to-training",
+      "from": "features",
+      "to": "training",
+      "label": "analytics_order_features"
+    },
+    {
+      "id": "training-to-ceiling",
+      "from": "training",
+      "to": "ceiling",
+      "label": "then oracle ceiling"
+    },
+    {
+      "id": "ceiling-to-reporting",
+      "from": "ceiling",
+      "to": "reporting",
+      "label": "then report charts"
+    },
+    {
+      "id": "ingestion-writes-db",
+      "from": "ingestion",
+      "to": "sqlite_store",
+      "label": "raw_orders, raw_returns, quarantine",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "features-writes-db",
+      "from": "features",
+      "to": "sqlite_store",
+      "label": "analytics_order_features, returns_fact, meta",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "training-writes-models",
+      "from": "training",
+      "to": "models_store",
+      "label": "model.joblib, metrics, importance",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "training-writes-scores",
+      "from": "training",
+      "to": "sqlite_store",
+      "label": "analytics_risk_scores",
+      "fromSide": "left",
+      "toSide": "top"
+    },
+    {
+      "id": "ceiling-writes-models",
+      "from": "ceiling",
+      "to": "models_store",
+      "label": "ceiling.json",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "report-reads-db",
+      "from": "sqlite_store",
+      "to": "reporting",
+      "label": "read analytics_order_features",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "report-reads-models",
+      "from": "models_store",
+      "to": "reporting",
+      "label": "read model and importance",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "frontend-to-fastapi",
+      "from": "frontend",
+      "to": "fastapi",
+      "label": "POST /copilot/ask",
+      "variant": "emphasis"
+    },
+    {
+      "id": "fastapi-to-copilot",
+      "from": "fastapi",
+      "to": "copilot",
+      "label": "ask(question, Toolbox)"
+    },
+    {
+      "id": "copilot-to-llm",
+      "from": "copilot",
+      "to": "llm_provider",
+      "label": "tool-calling when configured",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "copilot-to-rules",
+      "from": "copilot",
+      "to": "rules_engine",
+      "label": "default or fallback",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "copilot-to-tools",
+      "from": "copilot",
+      "to": "sql_tools",
+      "label": "call_tool"
+    },
+    {
+      "id": "rules-to-tools",
+      "from": "rules_engine",
+      "to": "sql_tools",
+      "label": "deterministic routing",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "tools-read-db",
+      "from": "sql_tools",
+      "to": "sqlite_store",
+      "label": "read-only SELECT on analytics_*",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "security"
+    },
+    {
+      "id": "tools-read-models",
+      "from": "sql_tools",
+      "to": "models_store",
+      "label": "model_metrics reads metrics.json",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "copilot-response",
+      "from": "copilot",
+      "to": "fastapi",
+      "label": "grounded Answer or refusal",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "SQLite Tables",
+      "items": [
+        "raw_orders and raw_returns are created by ingestion.",
+        "quarantine_ingestion stores rejected input rows.",
+        "analytics_order_features, analytics_returns_fact, analytics_meta and analytics_risk_scores are refreshed by later scripts."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Batch And Serving Meet Only At Storage",
+      "items": [
+        "Batch scripts write SQLite analytics tables and models/ artifacts.",
+        "Serving reads those stores through the read-only engine and fixed tools.",
+        "There is no queue, cache, container runtime or load balancer in this repository slice."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Copilot Runtime",
+      "items": [
+        "An LLM is used when configured through RETURNIQ_LLM or provider credentials.",
+        "Ollama-compatible calls use RETURNIQ_OLLAMA_MODEL with gemma4:31b as the code default.",
+        "Rules are the default without an enabled LLM and the fallback when LLM output is unusable."
+      ]
+    }
+  ]
+}
