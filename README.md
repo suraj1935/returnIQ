@@ -109,6 +109,14 @@ Tool routing checks both the tool chosen and the filters passed (dates and produ
 gemma4:31b is the default because it is the only model with 42/42 on both tool routing and grounding; gpt-oss:120b
 is slightly faster at the median but has 35/42 grounded.
 
+## n8n demo: daily high-risk alert
+
+`n8n/returniq_daily_alert.json` asks the Copilot for the highest-risk open orders every morning and
+sends them to Telegram. Answers that fail the grounding check are not sent; a short "could not verify"
+note goes out instead. To try it, start the API (`uvicorn backend.main:app --port 8000`), import the
+workflow into n8n, add your own Telegram bot credential and chat ID to both Telegram nodes, and click
+"Run now (for demo)". The schedule only fires while n8n and the API are running.
+
 ## Known limits
 - Risk scores are computed in batch, so an order placed after the last pipeline run has no score yet.
 - The data is synthetic and covers 2023 to 2024 only.
