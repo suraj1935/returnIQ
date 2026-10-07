@@ -60,8 +60,14 @@
           "label": "commands"
         }
       ],
-      "pos": [40, 130],
-      "size": [150, 62]
+      "pos": [
+        40,
+        130
+      ],
+      "size": [
+        150,
+        62
+      ]
     },
     {
       "id": "synthetic",
@@ -76,8 +82,14 @@
           "label": "generate CSV"
         }
       ],
-      "pos": [250, 130],
-      "size": [160, 62]
+      "pos": [
+        300,
+        130
+      ],
+      "size": [
+        160,
+        62
+      ]
     },
     {
       "id": "ingestion",
@@ -98,8 +110,14 @@
           "label": "run order"
         }
       ],
-      "pos": [470, 130],
-      "size": [170, 62]
+      "pos": [
+        570,
+        130
+      ],
+      "size": [
+        170,
+        62
+      ]
     },
     {
       "id": "features",
@@ -114,8 +132,14 @@
           "label": "analytics tables"
         }
       ],
-      "pos": [700, 130],
-      "size": [170, 62]
+      "pos": [
+        860,
+        130
+      ],
+      "size": [
+        170,
+        62
+      ]
     },
     {
       "id": "training",
@@ -130,8 +154,14 @@
           "label": "train and score"
         }
       ],
-      "pos": [940, 80],
-      "size": [155, 62]
+      "pos": [
+        1140,
+        70
+      ],
+      "size": [
+        155,
+        62
+      ]
     },
     {
       "id": "ceiling",
@@ -146,8 +176,14 @@
           "label": "ceiling"
         }
       ],
-      "pos": [940, 185],
-      "size": [155, 62]
+      "pos": [
+        1140,
+        200
+      ],
+      "size": [
+        155,
+        62
+      ]
     },
     {
       "id": "reporting",
@@ -162,8 +198,14 @@
           "label": "charts"
         }
       ],
-      "pos": [1160, 130],
-      "size": [155, 62]
+      "pos": [
+        1420,
+        130
+      ],
+      "size": [
+        155,
+        62
+      ]
     },
     {
       "id": "sqlite_store",
@@ -190,8 +232,14 @@
           "label": "risk scores"
         }
       ],
-      "pos": [620, 330],
-      "size": [245, 78]
+      "pos": [
+        640,
+        360
+      ],
+      "size": [
+        245,
+        78
+      ]
     },
     {
       "id": "models_store",
@@ -218,8 +266,14 @@
           "label": "ceiling"
         }
       ],
-      "pos": [940, 330],
-      "size": [190, 78]
+      "pos": [
+        1120,
+        360
+      ],
+      "size": [
+        190,
+        78
+      ]
     },
     {
       "id": "frontend",
@@ -234,8 +288,14 @@
           "label": "Copilot UI"
         }
       ],
-      "pos": [80, 570],
-      "size": [150, 62]
+      "pos": [
+        40,
+        600
+      ],
+      "size": [
+        150,
+        62
+      ]
     },
     {
       "id": "fastapi",
@@ -256,8 +316,14 @@
           "label": "routes"
         }
       ],
-      "pos": [310, 570],
-      "size": [150, 62]
+      "pos": [
+        320,
+        600
+      ],
+      "size": [
+        150,
+        62
+      ]
     },
     {
       "id": "copilot",
@@ -284,8 +350,14 @@
           "label": "grounding"
         }
       ],
-      "pos": [540, 570],
-      "size": [150, 62]
+      "pos": [
+        660,
+        600
+      ],
+      "size": [
+        150,
+        62
+      ]
     },
     {
       "id": "sql_tools",
@@ -312,8 +384,14 @@
           "label": "schemas"
         }
       ],
-      "pos": [780, 570],
-      "size": [170, 62]
+      "pos": [
+        1000,
+        600
+      ],
+      "size": [
+        170,
+        62
+      ]
     },
     {
       "id": "llm_provider",
@@ -340,8 +418,14 @@
           "label": "env config"
         }
       ],
-      "pos": [520, 725],
-      "size": [205, 68]
+      "pos": [
+        620,
+        770
+      ],
+      "size": [
+        205,
+        68
+      ]
     },
     {
       "id": "rules_engine",
@@ -362,27 +446,52 @@
           "label": "fallback"
         }
       ],
-      "pos": [780, 725],
-      "size": [170, 68]
+      "pos": [
+        1000,
+        770
+      ],
+      "size": [
+        170,
+        68
+      ]
     }
   ],
   "boundaries": [
     {
       "kind": "region",
       "label": "Batch pipeline, run by hand",
-      "wraps": ["manual_run", "synthetic", "ingestion", "features", "training", "ceiling", "reporting"],
+      "wraps": [
+        "manual_run",
+        "synthetic",
+        "ingestion",
+        "features",
+        "training",
+        "ceiling",
+        "reporting"
+      ],
       "pad": 24
     },
     {
       "kind": "region",
       "label": "Serving path",
-      "wraps": ["frontend", "fastapi", "copilot", "sql_tools", "llm_provider", "rules_engine"],
+      "wraps": [
+        "frontend",
+        "fastapi",
+        "copilot",
+        "sql_tools",
+        "llm_provider",
+        "rules_engine"
+      ],
       "pad": 24
     },
     {
       "kind": "security-group",
       "label": "Read-only boundary for Copilot SQL",
-      "wraps": ["fastapi", "copilot", "sql_tools"],
+      "wraps": [
+        "fastapi",
+        "copilot",
+        "sql_tools"
+      ],
       "pad": 12
     }
   ],
@@ -391,37 +500,37 @@
       "id": "manual-to-synthetic",
       "from": "manual_run",
       "to": "synthetic",
-      "label": "python pipelines/synthetic.py"
+      "label": "run"
     },
     {
       "id": "synthetic-to-ingestion",
       "from": "synthetic",
       "to": "ingestion",
-      "label": "orders.csv and returns.csv"
+      "label": "CSV files"
     },
     {
       "id": "ingestion-to-features",
       "from": "ingestion",
       "to": "features",
-      "label": "then build features"
+      "label": "raw tables"
     },
     {
       "id": "features-to-training",
       "from": "features",
       "to": "training",
-      "label": "analytics_order_features"
+      "label": "features"
     },
     {
       "id": "training-to-ceiling",
       "from": "training",
       "to": "ceiling",
-      "label": "then oracle ceiling"
+      "label": "then"
     },
     {
       "id": "ceiling-to-reporting",
       "from": "ceiling",
       "to": "reporting",
-      "label": "then report charts"
+      "label": "then"
     },
     {
       "id": "ingestion-writes-db",
@@ -548,7 +657,7 @@
       "id": "copilot-response",
       "from": "copilot",
       "to": "fastapi",
-      "label": "grounded Answer or refusal",
+      "label": "answer",
       "variant": "dashed"
     }
   ],

@@ -50,10 +50,9 @@ How much each feature moves the model's score on average, from `models/feature_i
 
 ## Pipeline
 
-```
-synthetic.py -> ingestion.py -> raw_orders / raw_returns -> features.py -> analytics_* -> train.py -> models/
-                                                                    \-> ai/tools.py -> ai/copilot.py -> backend/main.py + frontend/
-```
+![ReturnIQ architecture](docs/architecture/runtime-architecture.png)
+
+Interactive versions: [architecture](docs/architecture/runtime-architecture.html), [Copilot question flow](docs/architecture/copilot-flow.html) (download and open in a browser).
 
 ```bash
 pip install -r requirements.txt
@@ -84,6 +83,8 @@ python -m pytest tests -q                           # unit + API + leakage + Pla
   The system prompt states the data's date range, so relative dates like "last March" resolve against it and not
   against today. `top_products_by_return_rate` never ranks products with fewer than 30 mature orders. Forecast
   questions are refused rather than answered with historical numbers.
+
+  ![Copilot question flow](docs/architecture/copilot-flow.png)
 - All tools filter on the same **order-date cohort** basis, so a "Q3" answer never mixes populations.
 
 ## LLM configuration (`.env`, see `.env.example`)

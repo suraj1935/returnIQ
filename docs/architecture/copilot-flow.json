@@ -5,7 +5,10 @@
     "title": "ReturnIQ Copilot Grounding Flow",
     "output": "docs/architecture/copilot-flow.html",
     "quality_profile": "showcase",
-    "viewBox": [1280, 760],
+    "viewBox": [
+      944,
+      609
+    ],
     "column_fit": "spread",
     "repository": {
       "url": "https://github.com/suraj1935/returnIQ.git",
@@ -19,7 +22,7 @@
       "id": "user",
       "type": "external",
       "label": "User",
-      "sublabel": "asks a returns question",
+      "sublabel": "asks a question",
       "sources": [
         {
           "path": "frontend/index.html",
@@ -72,7 +75,7 @@
     {
       "id": "llm",
       "type": "external",
-      "label": "Configured LLM",
+      "label": "LLM",
       "sublabel": "tool-calling provider",
       "sources": [
         {
@@ -112,7 +115,7 @@
     {
       "id": "tools",
       "type": "backend",
-      "label": "Fixed SQL tools",
+      "label": "SQL tools",
       "sublabel": "7 tool schemas",
       "sources": [
         {
@@ -132,7 +135,7 @@
     {
       "id": "db",
       "type": "database",
-      "label": "SQLite analytics",
+      "label": "SQLite",
       "sublabel": "read-only connection",
       "sources": [
         {
@@ -152,8 +155,8 @@
     {
       "id": "grounding",
       "type": "security",
-      "label": "Grounding gate",
-      "sublabel": "verify numbers, dates and IDs",
+      "label": "Grounding",
+      "sublabel": "checks figures",
       "sources": [
         {
           "path": "ai/copilot.py",
@@ -173,18 +176,18 @@
   "segments": [
     {
       "from": 150,
-      "to": 250,
-      "label": "Prompt Setup"
+      "to": 254,
+      "label": "Prompt setup"
     },
     {
-      "from": 260,
-      "to": 470,
-      "label": "Tool Grounding"
+      "from": 262,
+      "to": 394,
+      "label": "Tool grounding"
     },
     {
-      "from": 480,
-      "to": 650,
-      "label": "Answer Gate"
+      "from": 402,
+      "to": 506,
+      "label": "Answer gate"
     }
   ],
   "messages": [
@@ -199,39 +202,23 @@
       "id": "call-ask",
       "from": "api",
       "to": "copilot",
-      "y": 190,
+      "y": 188,
       "label": "ask(question, Toolbox)",
       "variant": "emphasis"
-    },
-    {
-      "id": "read-window",
-      "from": "copilot",
-      "to": "db",
-      "y": 225,
-      "label": "SELECT data date range",
-      "variant": "security"
-    },
-    {
-      "id": "window-back",
-      "from": "db",
-      "to": "copilot",
-      "y": 255,
-      "label": "min order date and snapshot",
-      "variant": "return"
     },
     {
       "id": "llm-request",
       "from": "copilot",
       "to": "llm",
-      "y": 300,
-      "label": "system prompt with data range and tool schemas",
+      "y": 216,
+      "label": "prompt with data date range and tools",
       "variant": "emphasis"
     },
     {
       "id": "llm-tool-call",
       "from": "llm",
       "to": "copilot",
-      "y": 335,
+      "y": 244,
       "label": "tool call or no-tool reply",
       "variant": "return"
     },
@@ -239,7 +226,7 @@
       "id": "fallback-rules",
       "from": "copilot",
       "to": "rules",
-      "y": 370,
+      "y": 272,
       "label": "LLM error or skipped tools",
       "variant": "dashed",
       "note": "Rules are also used directly when no LLM is configured."
@@ -248,14 +235,14 @@
       "id": "call-tool",
       "from": "copilot",
       "to": "tools",
-      "y": 410,
+      "y": 300,
       "label": "call fixed tool with validated params"
     },
     {
       "id": "rules-tool",
       "from": "rules",
       "to": "tools",
-      "y": 445,
+      "y": 328,
       "label": "deterministic tool route",
       "variant": "dashed"
     },
@@ -263,48 +250,32 @@
       "id": "sql-select",
       "from": "tools",
       "to": "db",
-      "y": 485,
+      "y": 356,
       "label": "read-only SELECT over analytics_*",
       "variant": "security"
-    },
-    {
-      "id": "sql-result",
-      "from": "db",
-      "to": "tools",
-      "y": 520,
-      "label": "rows, query_id, data_as_of",
-      "variant": "return"
     },
     {
       "id": "tool-result",
       "from": "tools",
       "to": "copilot",
-      "y": 555,
-      "label": "ToolResult citations",
+      "y": 384,
+      "label": "rows as cited ToolResults",
       "variant": "return"
-    },
-    {
-      "id": "draft-answer",
-      "from": "copilot",
-      "to": "llm",
-      "y": 590,
-      "label": "send tool results for final answer",
-      "variant": "dashed"
     },
     {
       "id": "answer-text",
       "from": "llm",
       "to": "copilot",
-      "y": 625,
-      "label": "answer text",
+      "y": 412,
+      "label": "answer from tool results",
       "variant": "return"
     },
     {
       "id": "verify-answer",
       "from": "copilot",
       "to": "grounding",
-      "y": 660,
-      "label": "verify numbers, dates and IDs",
+      "y": 440,
+      "label": "verify figures",
       "variant": "security",
       "note": "Forecast or out-of-scope questions are refused before historical numbers are stated."
     },
@@ -312,7 +283,7 @@
       "id": "grounded-response",
       "from": "grounding",
       "to": "api",
-      "y": 695,
+      "y": 468,
       "label": "grounded answer or withheld refusal",
       "variant": "return"
     },
@@ -320,7 +291,7 @@
       "id": "api-response",
       "from": "api",
       "to": "user",
-      "y": 730,
+      "y": 496,
       "label": "AskResponse with citations",
       "variant": "return"
     }
@@ -328,44 +299,44 @@
   "activations": [
     {
       "participant": "api",
-      "from": 185,
-      "to": 735,
+      "from": 155,
+      "to": 501,
       "type": "backend"
     },
     {
       "participant": "copilot",
-      "from": 190,
-      "to": 700,
+      "from": 183,
+      "to": 445,
       "type": "backend"
     },
     {
       "participant": "llm",
-      "from": 295,
-      "to": 630,
+      "from": 211,
+      "to": 417,
       "type": "external"
     },
     {
       "participant": "rules",
-      "from": 365,
-      "to": 450,
+      "from": 267,
+      "to": 333,
       "type": "backend"
     },
     {
       "participant": "tools",
-      "from": 405,
-      "to": 560,
+      "from": 295,
+      "to": 389,
       "type": "backend"
     },
     {
       "participant": "db",
-      "from": 220,
-      "to": 525,
+      "from": 351,
+      "to": 361,
       "type": "database"
     },
     {
       "participant": "grounding",
-      "from": 655,
-      "to": 700,
+      "from": 435,
+      "to": 473,
       "type": "security"
     }
   ],
