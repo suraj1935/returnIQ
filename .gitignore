@@ -13,3 +13,8 @@ scripts/
 data/*.db
 data/synthetic/
 models/*.joblib
+.archify/
+docs/architecture/.archify-remove-*/
+docs/architecture/*.finalize*.json
+docs/architecture/*.delivery*.json
+docs/architecture/*.browser-check.json
